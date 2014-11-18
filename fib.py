@@ -8,7 +8,7 @@
 # Copyright:   (c) Rushi Shah 2014
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
-
+dictionary = {1:1, 2:1}
 def fib1(n):
     if(n<3):
         return 1
@@ -38,7 +38,7 @@ def fib5(n):
     return [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144][n-1]
 
 def fib6(n):
-    dictionary = {1:1, 2:1}
+    global dictionary
     if(n in dictionary): return dictionary[n]
     else:
         dictionary[n] = fib6(n-1) + fib6(n-2)
@@ -59,38 +59,41 @@ def fib8(n):
 
 def main():
     from time import clock
-    start = clock()
-    n = int(input("Fibbonacci number?"))
-    print("Ans 1", fib1(12))
-    print('   time = ', round(clock()-start,1), 'seconds')
-
-    start = clock()
-    print("Ans 2", fib2(12))
-    print('   time = ', round(clock()-start,1), 'seconds')
-
-    start = clock()
-    print("Ans 3", fib3(n))
-    print('   time = ', round(clock()-start,1), 'seconds')
-
-    start = clock()
-    print("Ans 4", fib4(n))
-    print('   time = ', round(clock()-start,1), 'seconds')
-
-    start = clock()
-    print("Ans 5", fib5(n))
-    print('   time = ', round(clock()-start,1), 'seconds')
-
-    start = clock()
-    print("Ans 6", fib6(n))
-    print('   time = ', round(clock()-start,1), 'seconds')
-
-    start = clock()
-    print("Ans 7", fib7(n))
-    print('   time = ', round(clock()-start,1), 'seconds')
-
-    start = clock()
-    print("Ans 8", fib8(n))
-    print('   time = ', round(clock()-start,1), 'seconds')
+    while(True):
+        n = int(input("Fibbonacci number?"))
+        x = int(input("Function number?"))
+        if(x == 1):
+            start = clock()
+            print("Ans 1", fib1(n))
+            print('   time = ', round(clock()-start,1), 'seconds')
+        if(x == 2):       
+            start = clock()
+            print("Ans 2", fib2(n))
+            print('   time = ', round(clock()-start,1), 'seconds')
+        if(x == 3):
+            start = clock()
+            print("Ans 3", fib3(n))
+            print('   time = ', round(clock()-start,1), 'seconds')
+        if(x == 4):
+            start = clock()
+            print("Ans 4", fib4(n))
+            print('   time = ', round(clock()-start,1), 'seconds')
+        if(x == 5):
+            start = clock()
+            print("Ans 5", fib5(n))
+            print('   time = ', round(clock()-start,1), 'seconds')
+        if(x == 6):
+            start = clock()
+            print("Ans 6", fib6(n))
+            print('   time = ', round(clock()-start,1), 'seconds')
+        if(x == 7):
+            start = clock()
+            print("Ans 7", fib7(n))
+            print('   time = ', round(clock()-start,1), 'seconds')
+        if(x == 8):
+            start = clock()
+            print("Ans 8", fib8(n))
+            print('   time = ', round(clock()-start,1), 'seconds')
 
 
 if __name__ == '__main__':
