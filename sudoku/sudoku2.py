@@ -1,3 +1,4 @@
+from copy import deepcopy
 ROWS = 9
 COLS = 9
 # M = [
@@ -11,7 +12,17 @@ COLS = 9
 #     [6, 0, 0, 0, 0, 0, 9, 2, 7],
 #     [7, 0, 0, 0, 0, 0, 3, 1, 0]
 # ]
-
+# M = [
+# 	[0,2,6,1,8,0,3,0,0],
+# 	[4,8,0,5,0,0,6,9,0],
+# 	[0,5,0,9,7,2,8,1,0],
+# 	[8,4,0,2,0,0,1,0,6],
+# 	[2,0,0,6,1,8,0,0,3],
+# 	[0,1,9,0,4,0,0,2,8],
+# 	[5,0,8,0,7,1,0,0,9],
+# 	[7,0,2,0,0,9,0,8,1],
+# 	[0,0,4,0,2,6,7,3,0]
+# ]
 # SOLVED = [
 # 	[4,8,3,9,2,1,6,5,7],
 # 	[9,6,7,3,4,5,8,2,1],
@@ -25,28 +36,51 @@ COLS = 9
 # ]
 M = [
 	[0,8,0,9,2,1,6,5,7],
-	[9,0,0,3,4,5,8,2,1],
-	[2,5,1,8,7,6,4,9,3],
-	[5,4,8,1,3,2,9,7,6],
-	[7,2,9,5,6,4,1,3,8],
+	[0,0,0,3,4,5,8,2,1],
+	[2,5,0,0,7,6,4,9,3],
+	[5,4,8,0,3,2,9,7,6],
+	[7,2,9,0,6,4,1,3,8],
 	[1,3,6,7,9,8,2,4,5],
 	[3,7,2,6,8,9,5,1,4],
 	[8,1,4,2,5,3,7,6,9],
 	[6,9,5,4,1,7,3,8,2]
 ]
-
-
-# M = [
-# 	[0,2,6,1,8,0,3,0,0],
-# 	[4,8,0,5,0,0,6,9,0],
-# 	[0,5,0,9,7,2,8,1,0],
-# 	[8,4,0,2,0,0,1,0,6],
-# 	[2,0,0,6,1,8,0,0,3],
-# 	[0,1,9,0,4,0,0,2,8],
-# 	[5,0,8,0,7,1,0,0,9],
-# 	[7,0,2,0,0,9,0,8,1],
-# 	[0,0,4,0,2,6,7,3,0]
-# ]
+class Cell(object):
+	matrix = None
+	def __init__(self, val, r, c, matrix):
+		if(val != 0):
+			self.value = {val,}
+		else:
+			self.value = {1, 2, 3, 4, 5, 6, 7, 8, 9,}
+		self.row = r
+		self.col = c
+		self.block = self.blockNumber(r, c)
+		Cell.matrix = matrix
+	def blockNumber(self, r, c):
+		if(r<=2):
+			if(c<=2):
+				return 0
+			elif(c<=5):
+				return 1
+			elif(c<=8):
+				return 2
+		elif(r<=5):
+			if(c<=2):
+				return 3
+			elif(c<=5):
+				return 4
+			elif(c<=8):
+				return 5
+		elif(r<=8):
+			if(c<=2):
+				return 6
+			elif(c<=5):
+				return 7
+			elif(c<=8):
+				return 8
+	def __repr__(self):
+		if(self.value == {1, 2, 3, 4, 5, 6, 7, 8, 9}): return str({0})
+		else: return str(self.value)
 def printMatrix(m):
 	print("[")
 	for row in range(len(m)):
@@ -94,7 +128,9 @@ def verifyTable(m):
 
 	#passed tests, return True
 	return True
-def fillRows(m):
+def fillRows(M):
+	m = deepcopy(M)
+	lowestNeeded = [x for x in range(1, 10)]
 	for i in range(len(m)):
 		needed = [x for x in range(1, 10)]
 		emptyIndices = []
@@ -106,9 +142,17 @@ def fillRows(m):
 		if(len(needed) == 1 and len(emptyIndices) == 1):
 			m[i][emptyIndices[0]] = needed[0]
 			print("replaced..")
-	return m
-def fillCols(m):
-	#check rows
+		elif(len(needed)>1 and len(needed)<len(lowestNeeded)):
+			lowestNeeded = needed
+	if(m!=M):
+		return m
+	elif(len(lowestNeeded)!=10):
+		return len(lowestNeeded)
+	else:
+		return -1
+def fillCols(M):
+	m = deepcopy(M)
+	lowestNeeded = [x for x in range(1, 10)]
 	for col in range(len(m[0])):
 		needed = [x for x in range(1, 10)]
 		emptyIndices = []
@@ -120,8 +164,17 @@ def fillCols(m):
 		if(len(needed) == 1 and len(emptyIndices) == 1):
 			m[emptyIndices[0]][col] = needed[0]
 			print("replaced..")
-	return m
-def fillBoxes(m):
+		elif(len(needed)>1 and len(needed)<len(lowestNeeded)):
+			lowestNeeded = deepcopy(needed)
+	if(m!=M):
+		return m
+	elif(len(lowestNeeded) != 10):
+		return len(lowestNeeded)
+	else:
+		return -1
+def fillBoxes(M):
+	m = deepcopy(M)
+	lowestNeeded = [x for x in range(1, 10)]
 	for ci in (1, 4, 7):
 		for cj in (1, 4, 7):
 			#center of box is m[ci][cj]
@@ -138,21 +191,54 @@ def fillBoxes(m):
 			if(len(needed) == 1 and len(emptyIndices) == 1):
 				m[emptyIndices[0][0]][emptyIndices[0][1]] = needed[0]
 				print("replaced..")
+			elif(len(needed)>1 and len(needed)<len(lowestNeeded)):
+				lowestNeeded = deepcopy(needed)
+	if(m!=M):
+		return m
+	elif(len(lowestNeeded)!=10):
+		return len(lowestNeeded)
+	else:
+		return -1
+def makeSimpleChanges(M):
+	m = deepcopy(M)
+	lowestNeeded = 10
+	x = fillRows(m)
+	if(type(x) is list): m = makeSimpleChanges(x)
+	elif(x!=-1 and x<lowestNeeded): lowestNeeded = x 
+
+	x = fillCols(m)
+	if(type(x) is list): m = makeSimpleChanges(x)
+	elif(x!=-1 and x<lowestNeeded): lowestNeeded = x 
+
+	x = fillBoxes(m)
+	if(type(x) is list): m = makeSimpleChanges(x)
+	elif(x!=-1 and x<lowestNeeded): lowestNeeded = x 
+
 	return m
-def iterativelySolve(m):
-	count = 0
-	while(not verifyTable(m)):
-		m = fillRows(m)
-		m = fillCols(m)
-		m = fillBoxes(m)
-		count+=1
-		if(count>5000):
-			print("it took a while, gave up")
-			exit()
-	print("Success! Iterations: ", count)
+def createMatrixObject(M):
+	matrix = []
+	for r in range(9):
+		row = []
+		for c in range(9):
+			row.append(Cell(M[r][c], r, c, matrix))
+		matrix.append(row)
+	return matrix
+def trickTwo(MO):
+	#once you figure out trick two, put it here
+	return MO
+def recursivelySolve(M):
+	m = deepcopy(M)
+	m = makeSimpleChanges(m)
+
+	mo = createMatrixObject(M)
+	mo = trickTwo(mo)
+
+
 	return m
 printMatrix(M)
 print("------Working-----")
-M = iterativelySolve(M)
+M = recursivelySolve(M)
 print("-----------------")
+print(verifyTable(M))
 printMatrix(M)
+# print(M)
