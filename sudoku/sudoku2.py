@@ -1,50 +1,15 @@
+"""
++---------------+
+|Rushi Shah		|
+|11/19/14		|
+|AI 6th period	|
++---------------+
+"""
 from copy import deepcopy
+from time import sleep
 ROWS = 9
 COLS = 9
-# M = [
-#     [4, 8, 1, 5, 0, 9, 6, 7, 0],
-#     [3, 0, 0, 8, 1, 6, 0, 0, 2],
-#     [5, 0, 0, 7, 0, 3, 0, 0, 8],
-#     [2, 0, 0, 0, 0, 0, 0, 0, 9],
-#     [9, 0, 0, 0, 0, 0, 0, 0, 1],
-#     [8, 0, 0, 0, 0, 0, 0, 0, 4],
-#     [0, 3, 9, 2, 7, 5, 4, 8, 0],
-#     [6, 0, 0, 0, 0, 0, 9, 2, 7],
-#     [7, 0, 0, 0, 0, 0, 3, 1, 0]
-# ]
-# M = [
-# 	[0,2,6,1,8,0,3,0,0],
-# 	[4,8,0,5,0,0,6,9,0],
-# 	[0,5,0,9,7,2,8,1,0],
-# 	[8,4,0,2,0,0,1,0,6],
-# 	[2,0,0,6,1,8,0,0,3],
-# 	[0,1,9,0,4,0,0,2,8],
-# 	[5,0,8,0,7,1,0,0,9],
-# 	[7,0,2,0,0,9,0,8,1],
-# 	[0,0,4,0,2,6,7,3,0]
-# ]
-# SOLVED = [
-# 	[4,8,3,9,2,1,6,5,7],
-# 	[9,6,7,3,4,5,8,2,1],
-# 	[2,5,1,8,7,6,4,9,3],
-# 	[5,4,8,1,3,2,9,7,6],
-# 	[7,2,9,5,6,4,1,3,8],
-# 	[1,3,6,7,9,8,2,4,5],
-# 	[3,7,2,6,8,9,5,1,4],
-# 	[8,1,4,2,5,3,7,6,9],
-# 	[6,9,5,4,1,7,3,8,2]
-# ]
-M = [
-	[0,0,0,9,2,1,6,5,7],
-	[0,0,0,3,4,5,0,2,0],
-	[0,5,0,0,7,6,0,0,0],
-	[5,0,8,0,3,2,0,7,6],
-	[7,0,9,0,0,0,1,3,8],
-	[0,0,6,7,0,0,2,0,0],
-	[3,7,2,0,8,9,0,1,4],
-	[8,1,4,2,5,0,7,6,0],
-	[6,9,5,4,1,7,3,0,0]
-]
+
 class Cell(object):
 	matrix = None
 	def __init__(self, val, r, c, matrix):
@@ -247,16 +212,23 @@ def candidates(MO):
 							remSet.add(temp)
 				candidates = candidates - remSet
 				mo[row][col].value = candidates
+	if(mo == None):
+		exit()
 	return mo
 
 def printMatrixObject(MO):
+	print("\n")
 	for row in range(len(MO)):
 		s = ""
 		for col in range(len(MO[row])):
-			s+=str((MO[row][col].value))
+			if(len(MO[row][col].value)==1):
+				s+=str((MO[row][col].value))
+			else:
+
+				s+="{0}"
 		print(s)
-def convertMOtoM(MO):
-	mo = deepcopy(MO)
+	print("\n")
+def convertMOtoM(mo):
 	res = []
 	for i in range(len(mo)):
 		res.append([])
@@ -266,26 +238,65 @@ def convertMOtoM(MO):
 				res[i][j] = mo[i][j].value.pop()
 	return res
 def coordinatesOfCellWithSmallestValueSet(MO):
-	mo = deepcopy(MO)
-	smallest = 20
-	coords = [-1, -1]
-	for i in range(len(mo)):
-		for j in range(len(mo[i])):
-			if(len(mo[i][j].value) > 1 and len(mo[i][j].value) < smallest):
-				smallest = len(mo[i][j].value)
-				coords = [i, j]
-	if(coords[0]!=-1):
-		return coords
-def revert(MO, oldMO):
+	big = float('inf')
+	sml = 2
+	bestRow = -1
+	bestCol = -1
 	for r in range(len(MO)):
 		for c in range(len(MO[r])):
-			MO[r][c].value = oldMO[r][c].value
+			length = len(MO[r][c].value)
+			if sml<=length < big:
+				big = length
+				bestRow = r
+				bestCol = c
+	if bestRow == -1 or bestCol == -1:
+		printMatrixObject(MO)
+		exit("Error in coords")
+	return (bestRow, bestCol)
+
+def orderedCoords(mo):
+	#mo = deepcopy(MO)
+	mo = candidates(mo)
+	#print(mo)
+	coords = []
+	for i in range(len(mo)):
+		for j in range(len(mo[i])):
+			if(len(mo[i][j].value)>1):
+				coords.append([len(mo[i][j].value), i, j])
+	coords.sort(key = lambda x: x[0])
+	while(True):
+		if(len(coords)>0 and len(mo[coords[0][1]][coords[0][2]].value)>1):
+			#print("Guess location: ", coords[0][1], coords[0][2])
+			#print("Guess options: ", mo[coords[0][1]][coords[0][2]].value)
+			#m = convertMOtoM(mo)
+			#sleep(.5)
+			#print("\n"*50)
+			#printMatrix(m)
+			return coords
+		else:
+			print("-"*50, coords)
+			return []
+def revert(MO, oldMO):
+	# for r in range(len(MO)):
+	# 	for c in range(len(MO[r])):
+	# 		MO[r][c].value = oldMO[r][c].value
+	# m = convertMOtoM(MO)
+	# printMatrix(m)
+	# return MO
+	MO = deepcopy(oldMO)
+	#printMatrixObject(MO)
 	return MO
-def recursivelySolve(M):
-	if(verifyTable(M)):
-		return M
-	#trick 1
+# def badMatrix(matrix):
+# 	for r in range(len(matrix)):
+# 		for c in range(len(matrix[r])):
+# 			if(matrix[r][c].value == set()):
+# 				return True
+# 	return False
+def trick12(M):
 	m = deepcopy(M)
+	if(verifyTable(m)):
+		return m
+	#trick 1
 	m = makeSimpleChanges(m)
 	if(verifyTable(m)):
 		print("Trick 1 successfull")
@@ -304,33 +315,73 @@ def recursivelySolve(M):
 	else:
 		#print("Trick 2 failed, trying trick three:")
 		pass
-
-	#trick 3
-	if(not verifyTable(m)):
-		mo = createMatrixObject(m)
-		oldmo = deepcopy(mo)
-		coords = coordinatesOfCellWithSmallestValueSet(mo) #This starts getting stuck in an infinite loop between [8, 4] and [8, 5]
-		if(coords):
-			r = coords[0]
-			c = coords[1]
-			for guess in mo[r][c].value:
-				print("Making guess at: ", coords)
-				print("Made guess: ", guess)
-				mo[r][c].value = {guess,}
-				tempM = convertMOtoM(mo)
-				tempM = recursivelySolve(tempM)
-				if(verifyTable(tempM)):
-					print("Guess successful!")
-					return tempM
-				else:
-					mo = revert(mo, oldmo)
-					print("Nope! Reverting and possibly trying again")
 	return m
-
-print(verifyTable(M))
-printMatrix(M)
-print("------Working-----")
-M = recursivelySolve(M)
-print("-----------------")
-print(verifyTable(M))
-printMatrix(M)
+# def recursivelySolve(m):
+# 	m = trick12(m)
+# 	#trick 3
+# 	mo = createMatrixObject(m)
+# 	oldmo = deepcopy(mo)
+# 	coords = orderedCoords(mo)
+# 	if(len(coords) > 1):
+# 		for coord in coords:
+# 			r = coord[1]
+# 			c = coord[2]
+# 			mo = candidates(mo)
+# 			for guess in mo[r][c].value:
+# 				#print("Making guess at:", coord)
+# 				#print("Made guess:", guess)
+# 				mo[r][c].value = {guess,}
+# 				tempM = convertMOtoM(mo)
+# 				printMatrix(m)
+# 				tempM = recursivelySolve(tempM)
+# 				if(verifyTable(tempM)):
+# 					print("Guess successful!")
+# 					return tempM
+# 				else:
+# 					#print("Guess unsuccessful, reverting")
+# 					#printMatrixObject(oldmo)
+# 					mo = revert(mo, oldmo)
+# 					#printMatrixObject(mo)
+# 					#print("Nope! Reverting and possibly trying again")
+# 					#perhaps here I need to take the guess I made out of being a candidate...
+# 	else:
+# 		mo = revert(mo, oldmo)
+# 	return m
+def recursivelySolveTheSudoku(m):
+	m = trick12(m)
+	if(verifyTable(m)):
+		exit()
+	mo = createMatrixObject(m) 
+	oldmo = deepcopy(mo)
+	r,c = coordinatesOfCellWithSmallestValueSet(mo)
+	for guess in mo[r][c].value:
+		mo[r][c].value = {guess,}
+		m = convertMOtoM(mo)
+		m = recursivelySolveTheSudoku(m)
+		# mo  = createMatrixObject(m)
+		if(verifyTable(m)):
+			return m
+		mo = revert(mo, oldmo)
+	return m
+ 
+def main():
+	M = [
+		[6,0,0,0,4,8,0,0,2,],
+		[8,0,0,5,2,0,0,4,0,],
+		[0,0,0,0,0,0,0,7,0,],
+		[5,0,0,4,0,3,0,2,0,],
+		[0,0,1,0,0,0,9,0,0,],
+		[0,2,0,9,0,5,0,0,8,],
+		[0,0,0,7,0,0,0,0,0,],
+		[0,1,0,0,9,2,0,0,5,],
+		[2,0,0,8,6,0,0,0,3,]
+	] #broken
+	print(verifyTable(M))
+	printMatrix(M)
+	print("------Working-----")
+	M = recursivelySolveTheSudoku(M)
+	print("-----------------")
+	print(verifyTable(M))
+	printMatrix(M)
+main()
+#I think it is infinite recursion because I let it run for like a minute...
