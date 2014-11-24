@@ -9,6 +9,8 @@ from copy import deepcopy
 from time import sleep
 ROWS = 9
 COLS = 9
+count = 0
+guessesMade = {}
 
 class Cell(object):
 	matrix = None
@@ -94,6 +96,12 @@ def verifyTable(m):
 
 	#passed tests, return True
 	return True
+def badMatrix(MO):
+	for r in range(len(MO)):
+		for c in range(len(MO[r])):
+			if(MO[r][c].value == set()):
+				return True 
+	return False
 def fillRows(M):
 	m = deepcopy(M)
 	lowestNeeded = [x for x in range(1, 10)]
@@ -162,8 +170,8 @@ def fillBoxes(M):
 		return len(lowestNeeded)
 	else:
 		return -1
-def makeSimpleChanges(M):
-	m = deepcopy(M)
+def makeSimpleChanges(m):
+	#m = deepcopy(M)
 	lowestNeeded = 10
 	x = fillRows(m)
 	if(type(x) is list): m = makeSimpleChanges(x)
@@ -178,14 +186,7 @@ def makeSimpleChanges(M):
 	elif(x!=-1 and x<lowestNeeded): lowestNeeded = x 
 
 	return m
-def createMatrixObject(M):
-	matrix = []
-	for r in range(9):
-		row = []
-		for c in range(9):
-			row.append(Cell(M[r][c], r, c, matrix))
-		matrix.append(row)
-	return matrix
+
 def candidates(MO):
 	mo = deepcopy(MO)
 	for row in range(len(mo)):
@@ -215,7 +216,15 @@ def candidates(MO):
 	if(mo == None):
 		exit()
 	return mo
-
+def createMatrixObject(M):
+	matrix = []
+	for r in range(9):
+		row = []
+		for c in range(9):
+			row.append(Cell(M[r][c], r, c, matrix))
+		matrix.append(row)
+	matrix = candidates(matrix)
+	return matrix
 def printMatrixObject(MO):
 	print("\n")
 	for row in range(len(MO)):
@@ -237,22 +246,22 @@ def convertMOtoM(mo):
 			if(len(mo[i][j].value) == 1):
 				res[i][j] = mo[i][j].value.pop()
 	return res
-def coordinatesOfCellWithSmallestValueSet(MO):
-	big = float('inf')
-	sml = 2
-	bestRow = -1
-	bestCol = -1
-	for r in range(len(MO)):
-		for c in range(len(MO[r])):
-			length = len(MO[r][c].value)
-			if sml<=length < big:
-				big = length
-				bestRow = r
-				bestCol = c
-	if bestRow == -1 or bestCol == -1:
-		printMatrixObject(MO)
-		exit("Error in coords")
-	return (bestRow, bestCol)
+# def coordinatesOfCellWithSmallestValueSet(MO):
+# 	big = float('inf')
+# 	sml = 2
+# 	bestRow = -1
+# 	bestCol = -1
+# 	for r in range(len(MO)):
+# 		for c in range(len(MO[r])):
+# 			length = len(MO[r][c].value)
+# 			if sml<=length < big:
+# 				big = length
+# 				bestRow = r
+# 				bestCol = c
+# 	if bestRow == -1 or bestCol == -1:
+# 		printMatrixObject(MO)
+# 		exit("Error in coords")
+# 	return (bestRow, bestCol)
 
 def orderedCoords(mo):
 	#mo = deepcopy(MO)
@@ -274,7 +283,7 @@ def orderedCoords(mo):
 			#printMatrix(m)
 			return coords
 		else:
-			print("-"*50, coords)
+			#print("-"*50, coords)
 			return []
 def revert(MO, oldMO):
 	# for r in range(len(MO)):
@@ -286,12 +295,12 @@ def revert(MO, oldMO):
 	MO = deepcopy(oldMO)
 	#printMatrixObject(MO)
 	return MO
-# def badMatrix(matrix):
-# 	for r in range(len(matrix)):
-# 		for c in range(len(matrix[r])):
-# 			if(matrix[r][c].value == set()):
-# 				return True
-# 	return False
+def badMatrix(matrix):
+	for r in range(len(matrix)):
+		for c in range(len(matrix[r])):
+			if(matrix[r][c].value == set()):
+				return True
+	return False
 def trick12(M):
 	m = deepcopy(M)
 	if(verifyTable(m)):
@@ -315,71 +324,85 @@ def trick12(M):
 	else:
 		#print("Trick 2 failed, trying trick three:")
 		pass
+		#printMatrix(m)
 	return m
-# def recursivelySolve(m):
-# 	m = trick12(m)
-# 	#trick 3
-# 	mo = createMatrixObject(m)
-# 	oldmo = deepcopy(mo)
-# 	coords = orderedCoords(mo)
-# 	if(len(coords) > 1):
-# 		for coord in coords:
-# 			r = coord[1]
-# 			c = coord[2]
-# 			mo = candidates(mo)
-# 			for guess in mo[r][c].value:
-# 				#print("Making guess at:", coord)
-# 				#print("Made guess:", guess)
-# 				mo[r][c].value = {guess,}
-# 				tempM = convertMOtoM(mo)
-# 				printMatrix(m)
-# 				tempM = recursivelySolve(tempM)
-# 				if(verifyTable(tempM)):
-# 					print("Guess successful!")
-# 					return tempM
-# 				else:
-# 					#print("Guess unsuccessful, reverting")
-# 					#printMatrixObject(oldmo)
-# 					mo = revert(mo, oldmo)
-# 					#printMatrixObject(mo)
-# 					#print("Nope! Reverting and possibly trying again")
-# 					#perhaps here I need to take the guess I made out of being a candidate...
-# 	else:
-# 		mo = revert(mo, oldmo)
-# 	return m
-def recursivelySolveTheSudoku(m):
+def recursivelySolve(m):
+	mo = createMatrixObject(m)
+	if(badMatrix(mo)):
+		return m
+	global count
+	count+=1
+	#print("count: ", count)
 	m = trick12(m)
-	if(verifyTable(m)):
-		exit()
-	mo = createMatrixObject(m) 
+	#trick 3
+	mo = createMatrixObject(m)
 	oldmo = deepcopy(mo)
-	r,c = coordinatesOfCellWithSmallestValueSet(mo)
-	for guess in mo[r][c].value:
-		mo[r][c].value = {guess,}
-		m = convertMOtoM(mo)
-		m = recursivelySolveTheSudoku(m)
-		# mo  = createMatrixObject(m)
-		if(verifyTable(m)):
-			return m
+	coords = orderedCoords(mo)
+	if(len(coords) > 1):
+		for coord in coords:
+			r = coord[1]
+			c = coord[2]
+			mo = candidates(mo)
+			for guess in mo[r][c].value:
+				if((r, c)in guessesMade):
+					if(guess in guessesMade[(r, c)]):
+						continue
+					guessesMade[(r, c)].append(guess)
+				else:
+					guessesMade[(r, c)] = [guess]
+				print("-"*count, [r, c], mo[r][c].value)
+				mo[r][c].value = {guess,}
+				tempM = convertMOtoM(mo)
+				#printMatrix(m)
+				tempM = recursivelySolve(tempM)
+				count-=1
+				#print("count: ", count)
+				if(verifyTable(tempM)):
+					print("Guess successful!")
+					return tempM
+				else:
+					#print("Guess unsuccessful, reverting")
+					#printMatrixObject(oldmo)
+					mo = revert(mo, oldmo)
+					#printMatrixObject(mo)
+					#print("Nope! Reverting and possibly trying again")
+					#perhaps here I need to take the guess I made out of being a candidate...
+	else:
 		mo = revert(mo, oldmo)
 	return m
+# def recursivelySolveTheSudoku(m):
+# 	m = trick12(m)
+# 	if(verifyTable(m)):
+# 		exit()
+# 	mo = createMatrixObject(m) 
+# 	oldmo = deepcopy(mo)
+# 	r,c = coordinatesOfCellWithSmallestValueSet(mo)
+# 	for guess in mo[r][c].value:
+# 		mo[r][c].value = {guess,}
+# 		m = convertMOtoM(mo)
+# 		m = recursivelySolveTheSudoku(m)
+# 		# mo  = createMatrixObject(m)
+# 		if(verifyTable(m)):
+# 			return m
+# 		mo = revert(mo, oldmo)
+# 	return m
  
 def main():
 	M = [
-		[6,0,0,0,4,8,0,0,2,],
-		[8,0,0,5,2,0,0,4,0,],
-		[0,0,0,0,0,0,0,7,0,],
-		[5,0,0,4,0,3,0,2,0,],
-		[0,0,1,0,0,0,9,0,0,],
-		[0,2,0,9,0,5,0,0,8,],
-		[0,0,0,7,0,0,0,0,0,],
-		[0,1,0,0,9,2,0,0,5,],
-		[2,0,0,8,6,0,0,0,3,]
-	] #broken
+		[0,3,2,0,0,0,0,0,0],
+		[6,8,0,9,0,0,0,0,5],
+		[0,1,0,0,0,4,0,7,0],
+		[1,0,0,0,0,9,7,3,0],
+		[0,7,9,6,0,3,4,8,0],
+		[0,4,6,7,0,0,0,0,1],
+		[0,9,0,5,0,0,0,2,0],
+		[8,0,0,0,0,1,0,9,7],
+		[0,0,0,0,0,0,6,1,0]
+	] #works	
 	print(verifyTable(M))
 	printMatrix(M)
 	print("------Working-----")
-	M = recursivelySolveTheSudoku(M)
+	M = recursivelySolve(M)
 	print("-----------------")
 	print(verifyTable(M))
 	printMatrix(M)
