@@ -2,6 +2,9 @@ class Node(object):
 	def __init__(self, value):
 		self.value = value
 		self.children = {}
+	def __repr__(self):
+		self.printNodes()
+		return ''
 	def insert(self, stng = "cat"):
 		if(len(stng) > 0):
 			if(stng[0] in self.children):
@@ -42,6 +45,16 @@ class Node(object):
 			return True
 		else:
 			return False
+	def printNodes(self, stng=""):
+		if(self.value == '$'):
+			print(stng[1:])
+		else:
+			for child in self.children:
+				#print(child)
+				self.children[child].printNodes(stng+self.value)
+
+from sys import setrecursionlimit; setrecursionlimit(100)
+from time import clock
 
 def main():
 	root = Node("*")
@@ -54,10 +67,19 @@ def main():
 	root.insert("dog")
 	root.insert("dognip")
 	root.insert("")
-	root.printWords()
-	searchWord = input("Word to search for: ")
-	if(root.search(searchWord)):
-		print(searchWord, "is in the trie")
-	else:
-		print(searchWord, "is not in the trie")
-main()
+	#print(root)
+	root.printNodes()
+	print("SEARCH:", root.search('*'))
+	printElapsedTime()
+	#root.printWords()
+	# searchWord = input("Word to search for: ")
+	# if(root.search(searchWord)):
+	# 	print(searchWord, "is in the trie")
+	# else:
+	# 	print(searchWord, "is not in the trie")
+def printElapsedTime():
+	print('\n--Total run time =', round(clock()-startTime, 2),'seconds.')
+
+if __name__ == '__main__':
+	startTime = clock()
+	main()
