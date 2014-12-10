@@ -35,16 +35,19 @@ def requestAndCheckHumanMove(root, stng):
 def requestAndCheckComputerMove(root, stng):
 	nLetter = root.searchForNextLetter(stng)
 	stng+=nLetter
-	if(root.search(stng)):
-		print("Computer loses, game over: ", stng)
-		exit()
 	print("Computer added",  nLetter, "to make: ", stng)
+	if(root.search(stng)):
+		print("-"*50)
+		print('COMPUTER LOSES because"', stng, '" is a word.', sep = '')
+		print('-'*19, "<GAME OVER>", '-'*18)
+		exit()
 	return stng
 
 
 def main():
-	root = createTrieFromDictionaryFile()
+	print('\n'*60)
 	printGhostDirections()
+	root = createTrieFromDictionaryFile()
 	stng = '' #current string
 	while True:
 		stng = requestAndCheckHumanMove(root, stng)
