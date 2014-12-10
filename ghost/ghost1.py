@@ -15,7 +15,10 @@ def createTrieFromDictionaryFile():
 	file1.close()
 	return root
 def requestAndCheckHumanMove(root, stng):
-	stng += input("HUMAN, enter your character.").lower()[0]
+	if(stng):
+		stng += input("HUMAN, enter your character for the word "+stng).lower()[0]
+	else:
+		stng = input("HUMAN, start the game with a letter: ")
 	print(' ', stng)
 	if(root.search(stng)):
 		print("-"*50)
@@ -29,6 +32,14 @@ def requestAndCheckHumanMove(root, stng):
 		print('-'*18, "<GAME OVER>", '-'*18)
 		exit()
 	return stng
+def requestAndCheckComputerMove(root, stng):
+	nLetter = root.searchForNextLetter(stng)
+	stng+=nLetter
+	if(root.search(stng)):
+		print("Computer loses, game over: ", stng)
+		exit()
+	print("Computer added",  nLetter, "to make: ", stng)
+	return stng
 
 
 def main():
@@ -37,6 +48,6 @@ def main():
 	stng = '' #current string
 	while True:
 		stng = requestAndCheckHumanMove(root, stng)
-		#stng = requestAndCheckComputerMove(root, stng)
+		stng = requestAndCheckComputerMove(root, stng)
 	
 main()
