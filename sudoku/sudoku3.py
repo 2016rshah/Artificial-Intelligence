@@ -9,9 +9,9 @@ class Cell(object):
 			self.value = {1, 2, 3, 4, 5, 6, 7, 8, 9, }
 		self.row = r
 		self.col = c
-		self.block = self.blockNumber(r, c)
+		self.block = self.blockNumber()
 		Cell.matrix = matrix
-	def blockNumber(self, row, col):
+	def blockNumber(self):
 		if((self.row < 3) 		and (self.col < 3)): 		return 0
 		if((self.row < 3) 		and (2 < self.col < 6)): 	return 1
 		if((self.row < 3) 		and (5 < self.col)): 		return 2
@@ -111,10 +111,10 @@ def createMatrix():
 	M = [
 		[4,8,3,9,2,1,6,5,7],
 		[9,6,7,3,4,5,8,2,1],
-		[2,5,0,0,7,6,4,9,3],
-		[5,4,8,1,3,2,9,7,6],
-		[7,2,9,5,6,4,1,3,8],
-		[1,3,6,7,9,8,2,4,5],
+		[2,5,1,8,7,6,4,9,3],
+		[0,0,0,0,3,2,9,7,6],
+		[0,0,0,0,6,4,1,3,8],
+		[0,0,0,0,9,8,2,4,5],
 		[3,7,2,6,8,9,5,1,4],
 		[8,1,4,2,5,3,7,6,9],
 		[6,9,5,4,1,7,3,8,2]
@@ -141,10 +141,8 @@ def rowChanges(matrix):
 			if(len(matrix[r][c].value) > 1):
 				for col in range(MAX):
 					if(len(matrix[r][col].value) == 1):
-						if(c!=col):
-							toSubtract = toSubtract | matrix[r][col].value
+						toSubtract = toSubtract | matrix[r][col].value
 				if(len(toSubtract) > 0):
-					print(toSubtract)
 					matrix[r][c].value -= toSubtract
 					if(len(matrix[r][c].value) == 1):
 						print("increasing depth")
@@ -159,10 +157,8 @@ def colChanges(matrix):
 			if(len(matrix[r][c].value) > 1):
 				for row in range(MAX):
 					if(len(matrix[row][c].value) == 1):
-						if(r!=row):
-							toSubtract = toSubtract | matrix[row][c].value
+						toSubtract = toSubtract | matrix[row][c].value
 				if(len(toSubtract) > 0):
-					print(toSubtract)
 					matrix[r][c].value -= toSubtract
 					if(len(matrix[r][c].value) == 1):
 						print("increasing depth")
@@ -173,18 +169,23 @@ def blockChanges(matrix):
 	for r in range(MAX):
 		for c in range(MAX):
 			toSubtract = set()
-			if(len(matrix[r][c]) > 1):
-				pass
+			if(len(matrix[r][c].value) > 1):
+				for row in range(MAX):
+					for col in range(MAX):
+						if(len(matrix[row][col].value) == 1 and matrix[row][col].blockNumber() == matrix[r][c].blockNumber()):
+							toSubtract = toSubtract | matrix[row][col].value 
 				if(len(toSubtract) > 0):
-					print(toSubtract)
 					matrix[r][c].value -= toSubtract
 					if(len(matrix[r][c].value) == 0):
+						print("increasing depth")
 						makeAllPossibleSimpleChangesToMatrix(matrix)
+	print('returning')
+	return matrix
 def makeAllPossibleSimpleChangesToMatrix(matrix):
 	#before = deepcopy(matrix)
 	matrix = rowChanges(matrix)
 	matrix = colChanges(matrix)
-
+	matrix = blockChanges(matrix)
 	# if(before != matrix):
 	# 	matrix = makeAllPossibleSimpleChangesToMatrix(matrix)
 	return matrix
