@@ -22,8 +22,8 @@ class Cell(object):
 		if((self.row > 5) 		and (2 < self.col < 6)): 	return 7
 		if((self.row > 5)		and (5 < self.col)):		return 8
 	def __repr__(self):
-		if(self.value == {1, 2, 3, 4, 5, 6, 7, 8, 9}):
-			return "{0}"
+		# if(self.value == {1, 2, 3, 4, 5, 6, 7, 8, 9}):
+		# 	return "{0}"
 		return str(self.value)
 		
 
@@ -109,16 +109,16 @@ def badMatrix(matrix):
 
 def createMatrix():
 	M = [
-	    [4, 8, 1, 5, 0, 9, 6, 7, 0],
-	    [3, 0, 0, 8, 1, 6, 0, 0, 2],
-	    [5, 0, 0, 7, 0, 3, 0, 0, 8],
-	    [2, 0, 0, 0, 0, 0, 0, 0, 9],
-	    [9, 0, 0, 0, 0, 0, 0, 0, 1],
-	    [8, 0, 0, 0, 0, 0, 0, 0, 4],
-	    [0, 3, 9, 2, 7, 5, 4, 8, 0],
-	    [6, 0, 0, 0, 0, 0, 9, 2, 7],
-	    [7, 0, 0, 0, 0, 0, 3, 1, 0]
-	] 
+		[4,8,3,9,2,1,6,5,7],
+		[9,6,7,3,4,5,8,2,1],
+		[2,5,0,0,7,6,4,9,3],
+		[5,4,0,0,3,2,9,7,6],
+		[7,2,9,5,6,4,1,3,8],
+		[1,3,6,7,9,8,2,4,5],
+		[3,7,2,6,8,9,5,1,4],
+		[8,1,4,2,5,3,7,6,9],
+		[6,9,5,4,1,7,3,8,2]
+	]
 	matrix = []
 	for r in range(MAX):
 		row = []
@@ -132,9 +132,53 @@ def restoreValue(matrix, oldMatrix):
 			matrix[r][c].value = oldMatrix[r][c].value
 	return matrix
 
-def recursivelySolveTheSudoku(matrix):
+
+def rowChanges(matrix):
+	# check cells row
+	for r in range(MAX):
+		for c in range(MAX):
+			toSubtract = set()
+			if(len(matrix[r][c].value) > 1):
+				for col in range(MAX):
+					if(len(matrix[r][col].value) == 1):
+						if(c!=col):
+							toSubtract = toSubtract | matrix[r][col].value
+				if(len(toSubtract) > 0):
+					print(toSubtract)
+					matrix[r][c].value -= toSubtract
+					if(len(matrix[r][c].value) == 0):
+						makeAllPossibleSimpleChangesToMatrix()
+	print("returning")
 	return matrix
+def colChanges(matrix):
+	# check cells column
+	for r in range(MAX):
+		for c in range(MAX):
+			toSubtract = set()
+			if(len(matrix[r][c].value) > 1):
+				for row in range(MAX):
+					if(len(matrix[row][c].value) == 1):
+						if(r!=row):
+							toSubtract = toSubtract | matrix[row][c].value
+				if(len(toSubtract) > 0):
+					print(toSubtract)
+					matrix[r][c].value -= toSubtract
+					if(len(matrix[r][c].value) == 0):
+						makeAllPossibleSimpleChangesToMatrix()
+	print("returning")
+	return matrix
+def makeAllPossibleSimpleChangesToMatrix(matrix):
+	#before = deepcopy(matrix)
+	matrix = rowChanges(matrix)
+	matrix = colChanges(matrix)
+
+	# if(before != matrix):
+	# 	matrix = makeAllPossibleSimpleChangesToMatrix(matrix)
+	return matrix
+
+def recursivelySolveTheSudoku(matrix):
 	matrix = makeAllPossibleSimpleChangesToMatrix(matrix)
+	return matrix
 	if badMatrix(matrix) or solutionIsCorrect(matrix):
 		return matrix
 	oldMatrix = deepcopy(matrix)
@@ -151,9 +195,11 @@ def displayTheBoard(matrix):
 		for j in range(MAX):
 			print(matrix[i][j], end = " ")
 		print()
+	print("-"*35)
 
 def main():
 	matrix = createMatrix()
+	displayTheBoard(matrix)
 	matrix = recursivelySolveTheSudoku(matrix)
 	displayTheBoard(matrix)
 	print(solutionIsCorrect(matrix))
