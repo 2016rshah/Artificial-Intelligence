@@ -112,7 +112,7 @@ def createMatrix():
 		[4,8,3,9,2,1,6,5,7],
 		[9,6,7,3,4,5,8,2,1],
 		[2,5,0,0,7,6,4,9,3],
-		[5,4,0,0,3,2,9,7,6],
+		[5,4,8,1,3,2,9,7,6],
 		[7,2,9,5,6,4,1,3,8],
 		[1,3,6,7,9,8,2,4,5],
 		[3,7,2,6,8,9,5,1,4],
@@ -146,8 +146,9 @@ def rowChanges(matrix):
 				if(len(toSubtract) > 0):
 					print(toSubtract)
 					matrix[r][c].value -= toSubtract
-					if(len(matrix[r][c].value) == 0):
-						makeAllPossibleSimpleChangesToMatrix()
+					if(len(matrix[r][c].value) == 1):
+						print("increasing depth")
+						makeAllPossibleSimpleChangesToMatrix(matrix)
 	print("returning")
 	return matrix
 def colChanges(matrix):
@@ -163,10 +164,22 @@ def colChanges(matrix):
 				if(len(toSubtract) > 0):
 					print(toSubtract)
 					matrix[r][c].value -= toSubtract
-					if(len(matrix[r][c].value) == 0):
-						makeAllPossibleSimpleChangesToMatrix()
+					if(len(matrix[r][c].value) == 1):
+						print("increasing depth")
+						makeAllPossibleSimpleChangesToMatrix(matrix)
 	print("returning")
 	return matrix
+def blockChanges(matrix):
+	for r in range(MAX):
+		for c in range(MAX):
+			toSubtract = set()
+			if(len(matrix[r][c]) > 1):
+				pass
+				if(len(toSubtract) > 0):
+					print(toSubtract)
+					matrix[r][c].value -= toSubtract
+					if(len(matrix[r][c].value) == 0):
+						makeAllPossibleSimpleChangesToMatrix(matrix)
 def makeAllPossibleSimpleChangesToMatrix(matrix):
 	#before = deepcopy(matrix)
 	matrix = rowChanges(matrix)
