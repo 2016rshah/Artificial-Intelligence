@@ -1,5 +1,15 @@
+"""
++---------------+
+|Rushi Shah		|
+|12/25/14		|
+|Sudoku solver	|
+|AI 6th period	|
++---------------+
+"""
+
 from copy import deepcopy
 MAX = 9
+
 class Cell(object):
 	matrix = None
 	def __init__(self, val, r, c, matrix):
@@ -22,20 +32,13 @@ class Cell(object):
 		if((self.row > 5) 		and (2 < self.col < 6)): 	return 7
 		if((self.row > 5)		and (5 < self.col)):		return 8
 	def __repr__(self):
-		# if(self.value == {1, 2, 3, 4, 5, 6, 7, 8, 9}):
-		# 	return "{0}"
+		if(self.value == {1, 2, 3, 4, 5, 6, 7, 8, 9}):
+			return "{0}"
+		if(len(self.value)>1):
+			return "{0}"
 		return str(self.value)
-		
 
-
-def solutionIsCorrect(matrix):
-	rows = [[] for x in range(MAX)]
-	cols = [[] for x in range(MAX)]
-	for r in range(MAX):
-		for c in range(MAX):
-			rows[r].append(matrix[r][c].value)
-			cols[c].append(matrix[r][c].value)
-
+def blocks(matrix):
 	block = [[] for x in range(MAX)]
 
 	block[0] = [
@@ -86,6 +89,20 @@ def solutionIsCorrect(matrix):
 		matrix[8][6].value, matrix[8][7].value, matrix[8][8].value 
 	]
 
+	return block
+
+def solutionIsCorrect(matrix):
+	if(badMatrix(matrix)):
+		exit("Bad matrix")
+	rows = [[] for x in range(MAX)]
+	cols = [[] for x in range(MAX)]
+	for r in range(MAX):
+		for c in range(MAX):
+			rows[r].append(matrix[r][c].value)
+			cols[c].append(matrix[r][c].value)
+
+	block = blocks(matrix)
+
 	for r in rows:
 		for n in range(1, MAX+1):
 			if{n} not in r:
@@ -109,15 +126,15 @@ def badMatrix(matrix):
 
 def createMatrix():
 	M = [
-		[4,8,3,9,2,1,6,5,7],
-		[9,6,7,3,4,5,8,2,1],
-		[2,5,1,8,7,6,4,9,3],
-		[0,0,0,0,3,2,9,7,6],
-		[0,0,0,0,6,4,1,3,8],
-		[0,0,0,0,9,8,2,4,5],
-		[3,7,2,6,8,9,5,1,4],
-		[8,1,4,2,5,3,7,6,9],
-		[6,9,5,4,1,7,3,8,2]
+		[8,0,0,0,0,0,0,0,0],
+		[0,0,3,6,0,0,0,0,0],
+		[0,7,0,0,9,0,2,0,0],
+		[0,5,0,0,0,7,0,0,0],
+		[0,0,0,0,4,5,7,0,0],
+		[0,0,0,1,0,0,0,3,0],
+		[0,0,1,0,0,0,0,6,8],
+		[0,0,8,5,0,0,0,1,0],
+		[0,9,0,0,0,0,4,0,0]
 	]
 	matrix = []
 	for r in range(MAX):
@@ -126,12 +143,12 @@ def createMatrix():
 			row.append(Cell(M[r][c], r, c, matrix))
 		matrix.append(row)
 	return matrix
+
 def restoreValue(matrix, oldMatrix):
 	for r in range(MAX):
 		for c in range(MAX):
 			matrix[r][c].value = oldMatrix[r][c].value
 	return matrix
-
 
 def rowChanges(matrix):
 	# check cells row
@@ -145,10 +162,11 @@ def rowChanges(matrix):
 				if(len(toSubtract) > 0):
 					matrix[r][c].value -= toSubtract
 					if(len(matrix[r][c].value) == 1):
-						print("increasing depth")
+						#print("increasing depth")
 						makeAllPossibleSimpleChangesToMatrix(matrix)
-	print("returning")
+	#print("returning")
 	return matrix
+
 def colChanges(matrix):
 	# check cells column
 	for r in range(MAX):
@@ -161,10 +179,11 @@ def colChanges(matrix):
 				if(len(toSubtract) > 0):
 					matrix[r][c].value -= toSubtract
 					if(len(matrix[r][c].value) == 1):
-						print("increasing depth")
+						#print("increasing depth")
 						makeAllPossibleSimpleChangesToMatrix(matrix)
-	print("returning")
+	#print("returning")
 	return matrix
+
 def blockChanges(matrix):
 	for r in range(MAX):
 		for c in range(MAX):
@@ -177,23 +196,82 @@ def blockChanges(matrix):
 				if(len(toSubtract) > 0):
 					matrix[r][c].value -= toSubtract
 					if(len(matrix[r][c].value) == 0):
-						print("increasing depth")
+						#print("increasing depth")
 						makeAllPossibleSimpleChangesToMatrix(matrix)
-	print('returning')
+	#print('returning')
 	return matrix
+
+def trick2Row(matrix):
+	for r in range(MAX):
+		possibilities = [x+1 for x in range(MAX)]
+		for possibility in possibilities:
+			indices = []
+			for c in range(MAX):
+				if(len(matrix[r][c].value)>1):
+					if(possibility in matrix[r][c].value):
+						indices.append(c)
+			if(len(indices) == 1):
+				matrix[r][indices[0]].value = {possibility}
+				print("Trick 2 Row", r, indices[0], possibility)
+				return recursivelySolveTheSudoku(matrix)
+	return matrix
+
+def trick2Col(matrix):
+	for c in range(MAX):
+		possibilities = [x+1 for x in range(MAX)]
+		for possibility in possibilities:
+			indices = []
+			for r in range(MAX):
+				if(len(matrix[r][c].value)>1):
+					if(possibility in matrix[r][c].value):
+						indices.append(r)
+			if(len(indices) == 1):
+				matrix[indices[0]][c].value = {possibility}
+				print("Trick 2 Column", indices[0], c, possibility)
+				return recursivelySolveTheSudoku(matrix)
+	return matrix
+
+def trick2Block(matrix):
+	for i in range(MAX):
+		#inside a block from now on
+		possibilities = [x+1 for x in range(MAX)]
+		for possibility in possibilities:
+			found = 0
+			for r in range(MAX):
+				for c in range(MAX):
+					if(i == matrix[r][c].blockNumber()):
+						if(len(matrix[r][c].value) >1 and possibility in matrix[r][c].value):
+							found+=1
+			if(found == 1):
+				for r in range(MAX):
+					for c in range(MAX):
+						if(i == matrix[r][c].blockNumber()):
+							if(possibility in matrix[r][c].value):
+								matrix[r][c].value = {possibility}
+								print("Trick 2 Block", r, c, possibility)
+								return recursivelySolveTheSudoku(matrix)
+	return matrix
+
 def makeAllPossibleSimpleChangesToMatrix(matrix):
-	#before = deepcopy(matrix)
+	#trick 1
 	matrix = rowChanges(matrix)
 	matrix = colChanges(matrix)
 	matrix = blockChanges(matrix)
-	# if(before != matrix):
-	# 	matrix = makeAllPossibleSimpleChangesToMatrix(matrix)
+	
+	#trick 2
+	matrix = trick2Row(matrix)
+	matrix = trick2Col(matrix)
+	matrix = trick2Block(matrix)
+
+
 	return matrix
 
 def recursivelySolveTheSudoku(matrix):
 	matrix = makeAllPossibleSimpleChangesToMatrix(matrix)
 	return matrix
-	if badMatrix(matrix) or solutionIsCorrect(matrix):
+	if badMatrix(matrix):
+		exit("Bad matrix")
+	if solutionIsCorrect(matrix):
 		return matrix
 	oldMatrix = deepcopy(matrix)
 	r, c = coordinatesOfCellWithSmallestValueSet(matrix)
@@ -204,6 +282,7 @@ def recursivelySolveTheSudoku(matrix):
 			return matrix
 		matrix = restoreValues(matrix, oldMatrix)
 	return matrix
+
 def displayTheBoard(matrix):
 	for i in range(MAX):
 		for j in range(MAX):
@@ -217,4 +296,6 @@ def main():
 	matrix = recursivelySolveTheSudoku(matrix)
 	displayTheBoard(matrix)
 	print(solutionIsCorrect(matrix))
+
+
 main()
