@@ -10,6 +10,7 @@
 from copy import deepcopy
 MAX = 9
 
+#Setup
 class Cell(object):
 	matrix = None
 	def __init__(self, val, r, c, matrix):
@@ -91,9 +92,14 @@ def blocks(matrix):
 
 	return block
 
+def displayTheBoard(matrix):
+	for i in range(MAX):
+		for j in range(MAX):
+			print(matrix[i][j], end = " ")
+		print()
+	print("-"*35)
+
 def solutionIsCorrect(matrix):
-	if(badMatrix(matrix)):
-		exit("Bad matrix")
 	rows = [[] for x in range(MAX)]
 	cols = [[] for x in range(MAX)]
 	for r in range(MAX):
@@ -117,24 +123,17 @@ def solutionIsCorrect(matrix):
 				return False
 	return True
 
-def badMatrix(matrix):
-	for r in range(MAX):
-		for c in range(MAX):
-			if matrix[r][c].value == set(): #empty
-				return True
-	return False
-
 def createMatrix():
 	M = [
-		[8,0,0,0,0,0,0,0,0],
-		[0,0,3,6,0,0,0,0,0],
-		[0,7,0,0,9,0,2,0,0],
-		[0,5,0,0,0,7,0,0,0],
-		[0,0,0,0,4,5,7,0,0],
-		[0,0,0,1,0,0,0,3,0],
-		[0,0,1,0,0,0,0,6,8],
-		[0,0,8,5,0,0,0,1,0],
-		[0,9,0,0,0,0,4,0,0]
+		[8, 1, 2, 0, 0, 0, 0, 0, 9,], 
+		[9, 4, 3, 0, 0, 0, 0, 0, 5,],
+		[6, 7, 5, 0, 0, 0, 0, 0, 3,], 
+		[1, 5, 4, 0, 0, 0, 0, 0, 6,], 
+		[3, 6, 9, 0, 0, 0, 0, 0, 1,], 
+		[2, 8, 7, 0, 0, 0, 0, 0, 4,], 
+		[5, 2, 1, 9, 7, 4, 3, 6, 8,], 
+		[4, 3, 8, 5, 2, 6, 9, 1, 7,],
+		[7, 9, 6, 3, 1, 8, 4, 5, 2,]
 	]
 	matrix = []
 	for r in range(MAX):
@@ -144,12 +143,7 @@ def createMatrix():
 		matrix.append(row)
 	return matrix
 
-def restoreValue(matrix, oldMatrix):
-	for r in range(MAX):
-		for c in range(MAX):
-			matrix[r][c].value = oldMatrix[r][c].value
-	return matrix
-
+#Tricks one and two
 def rowChanges(matrix):
 	# check cells row
 	for r in range(MAX):
@@ -212,7 +206,6 @@ def trick2Row(matrix):
 						indices.append(c)
 			if(len(indices) == 1):
 				matrix[r][indices[0]].value = {possibility}
-				print("Trick 2 Row", r, indices[0], possibility)
 				return recursivelySolveTheSudoku(matrix)
 	return matrix
 
@@ -227,7 +220,6 @@ def trick2Col(matrix):
 						indices.append(r)
 			if(len(indices) == 1):
 				matrix[indices[0]][c].value = {possibility}
-				print("Trick 2 Column", indices[0], c, possibility)
 				return recursivelySolveTheSudoku(matrix)
 	return matrix
 
@@ -248,7 +240,6 @@ def trick2Block(matrix):
 						if(i == matrix[r][c].blockNumber()):
 							if(possibility in matrix[r][c].value):
 								matrix[r][c].value = {possibility}
-								print("Trick 2 Block", r, c, possibility)
 								return recursivelySolveTheSudoku(matrix)
 	return matrix
 
@@ -263,39 +254,74 @@ def makeAllPossibleSimpleChangesToMatrix(matrix):
 	matrix = trick2Col(matrix)
 	matrix = trick2Block(matrix)
 
-
 	return matrix
+
+def badMatrix(matrix):
+	for r in range(MAX):
+		for c in range(MAX):
+			if matrix[r][c].value == set(): #empty
+				return True
+	return False
+
+def restoreValue(matrix, oldMatrix):
+	for r in range(MAX):
+		for c in range(MAX):
+			matrix[r][c].value = oldMatrix[r][c].value
+	return matrix
+
+def coordinatesOfCellWithSmallestValueSet(matrix):
+	currMin = 11
+	currFound = False
+	for r in range(MAX):
+		for c in range(MAX):
+			if(1 < len(matrix[r][c].value) < currMin):
+				currMin = len(matrix[r][c].value)
+				currCoords = (r, c)
+				currFound = True
+	if(currFound):
+		return currCoords
+def isFilled(matrix):
+	for r in range(MAX):
+		for c in range(MAX):
+			if(len(matrix[r][c].value) > 1):
+				return False
+	return True
 
 def recursivelySolveTheSudoku(matrix):
+	#Trick 1 and 2
 	matrix = makeAllPossibleSimpleChangesToMatrix(matrix)
-	return matrix
-	if badMatrix(matrix):
-		exit("Bad matrix")
-	if solutionIsCorrect(matrix):
+	if(solutionIsCorrect(matrix)):
 		return matrix
+	elif(badMatrix(matrix) or isFilled(matrix)):
+		return matrix #return it anyways to unwind the bad matrix
+	#Trick 3
 	oldMatrix = deepcopy(matrix)
 	r, c = coordinatesOfCellWithSmallestValueSet(matrix)
-	for guess in matrix[r][c].value:
-		matrix[r][c].value = {guess,}
+	#print("Calculated coordinates of cell with smallest set:", r, c)
+	#for loop for each guess
+	guesses = matrix[r][c].value
+	#print("Possible guesses are", guesses)
+	for guess in guesses:
+		matrix[r][c].value = {guess}
+		#print("Inserting", guess, "into", r, c)
 		matrix = recursivelySolveTheSudoku(matrix)
-		if solutionIsCorrect(matrix):
+		if(solutionIsCorrect(matrix)):
 			return matrix
-		matrix = restoreValues(matrix, oldMatrix)
+		else:
+			#print("Restoring values")
+			matrix = restoreValue(matrix, oldMatrix)
 	return matrix
-
-def displayTheBoard(matrix):
-	for i in range(MAX):
-		for j in range(MAX):
-			print(matrix[i][j], end = " ")
-		print()
-	print("-"*35)
 
 def main():
 	matrix = createMatrix()
 	displayTheBoard(matrix)
 	matrix = recursivelySolveTheSudoku(matrix)
 	displayTheBoard(matrix)
-	print(solutionIsCorrect(matrix))
-
+	if(solutionIsCorrect(matrix)):
+		print("Matrix is correct")
+	elif(badMatrix(matrix)):
+		print("Bad matrix")
+	else:
+		print("Unable to solve")
 
 main()
