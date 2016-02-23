@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from math import atan2
+from math import pi
 import sys
 
 
@@ -132,33 +133,108 @@ def isEdge(img, i, j, lower_t, upper_t):
 	gy = derivs[1]
 	g = gx * gx + gy * gy
 
-	theta = atan2(gy, gx) # I think this goes from negative pi to pi
+	
 	
 	# print(theta)
-	if(g > upper_t * upper_t):
+	if(g > upper_t):
 		return False
 	elif(g < lower_t * lower_t):
 		return True
 	else:
-		return isEdge(img, i-1, j-1, lower_t, upper_t) or isEdge(img, i-1, j-1, lower_t, upper_t) 
-		#this will fail if it recurs out of bounds
-	# elif(g >= getGvalue(img, i-1, j) and g >= getGvalue(img, i+1, j)):
-	# 	return (0,255,0)
-	# else:
+		# theta = atan2(gy, gx) * 8 # Multiply by eight because unit circle split into eights to get lines to check along
+		# if((theta > (-pi) and theta < (pi)) or (theta > (7 * pi) and theta < (-7 * pi))): # horizontal
+		# 	return isEdge(img, i-1, j, lower_t, upper_t) or isEdge(img, i+1, j, lower_t, upper_t) 
+		# elif((theta > (pi) and theta < (3 * pi)) or (theta > (-7 * pi) and theta < (-5 * pi))): # diagonal up
+		# 	return isEdge(img, i-1, j+1, lower_t, upper_t) or isEdge(img, i+1, j-1, lower_t, upper_t) 
+		# elif((theta > (3 * pi) and theta < (5 * pi)) or (theta > (-5 * pi) and theta < (-3 * pi))): # vertical
+		# 	return isEdge(img, i, j-1, lower_t, upper_t) or isEdge(img, i, j+1, lower_t, upper_t) 
+		# elif((theta > (5 * pi) and theta < (7 * pi)) or (theta > (-3 * pi) and theta < (-1 * pi))): # diagonal down
+		# 	return isEdge(img, i-1, j-1, lower_t, upper_t) or isEdge(img, i+1, j+1, lower_t, upper_t)
+		# else:
+		# 	print("something must have been close?")
+		# 	return False
 
+		#return isEdge(img, i-1, j-1, lower_t, upper_t) or isEdge(img, i+1, j+1, lower_t, upper_t) 
 
+		# return isEdge(img, i-1, j, lower_t, upper_t) or isEdge(img, i+1, j, lower_t, upper_t)
 
-def cannyImage(image):
+		return False
+
+def isGreatest(img, p1, p2, p3):
+	derivs1 = getDerivatives(img, p1[0], p1[0])
+	g1 = derivs1[0] * derivs1[0] + derivs1[1] * derivs1[1]
+
+	derivs2 = getDerivatives(img, p2[0], p2[0])
+	g2 = derivs2[0] * derivs2[0] + derivs2[1] * derivs2[1]
+
+	derivs3 = getDerivatives(img, p3[0], p3[0])
+	g3 = derivs3[0] * derivs3[0] + derivs3[1] * derivs3[1]
+	return (g1>g2 and g1>g3)
+
+def isStrong(img, i, j):
+	if(i<1 or j<1 or i>=img.shape[0] or j>=img.shape[1]):
+		return False
+
+	derivs = getDerivatives(img, i, j)
+	gx = derivs[0]
+	gy = derivs[1]
+	g = gx * gx + gy * gy
+
+	theta = atan2(gy, gx) * 8 # Multiply by eight because unit circle split into eights to get lines to check along
+	if((theta > (-pi) and theta < (pi)) or (theta > (7 * pi) and theta < (-7 * pi))): # horizontal
+		# print("horizontal")
+		if(isGreatest(img, (i, j), (i-1, j), (i+1, j))):
+			return False
+		else:
+			return True
+	elif((theta > (pi) and theta < (3 * pi)) or (theta > (-7 * pi) and theta < (-5 * pi))): # diagonal up
+		# print("diagonal up")
+		if(isGreatest(img, (i, j), (i-1, j+1), (i+1, j-1))):
+			return False
+		else:
+			return True
+	elif((theta > (3 * pi) and theta < (5 * pi)) or (theta > (-5 * pi) and theta < (-3 * pi))): # vertical
+		# print("vertical")
+		if(isGreatest(img, (i, j), (i, j-1), (i, j+1))):
+			return False
+		else:
+			return True
+	elif((theta > (5 * pi) and theta < (7 * pi)) or (theta > (-3 * pi) and theta < (-1 * pi))): # diagonal down
+		# print("diagonal down")
+		if(isGreatest(img, (i, j), (i-1, j-1), (i+1, j+1))):
+			return False
+		else:
+			return True
+	else:
+		# print("something must have been close?")
+		return False
+
+def canny1(image):
+	img = image.copy()
+	num_rows = img.shape[0] - 4
+	num_cols = img.shape[1] - 4
+	#Pass 1 of canny
+	for i in range(2, num_rows):
+		for j in range(2, num_cols):
+			if(isEdge(image, i, j, MID_THRESHOLD-DT, MID_THRESHOLD+DT)): #image is not changed, img is changed
+				setPixel(img, i, j, (255, 255, 255)) 
+	return img
+def canny2(image):
 	img = image.copy()
 	num_rows = img.shape[0] - 4
 	num_cols = img.shape[1] - 4
 	for i in range(2, num_rows):
 		for j in range(2, num_cols):
-			if(isEdge(image, i, j, MID_THRESHOLD-DT, MID_THRESHOLD+DT)): #image is not changed, img is changed
-				setPixel(img, i, j, (255, 255, 255)) 
-			else:
-				setPixel(img, i, j, (0, 0, 0))
+			if(img.item(i, j, 0) == 0): # black, and therefore edge
+				if(isStrong(image, i, j)): 
+					setPixel(img, i, j, (0, 0, 0)) # strong edges
+				else:
+					setPixel(img, i, j, (255, 255, 255))
 	return img
+
+def cannyImage(image):
+	return canny1(image)
+	
 
 def keystroke():
 	#Escape key to exit
@@ -193,7 +269,7 @@ def keystroke():
 location = sys.argv[1]
 
 MID_THRESHOLD = int(sys.argv[2])
-DT = 25
+DT = 10
 
 #if I want to read from URL, do that here. Until them, I treat it as a local url 
 image = cv2.imread(location)
@@ -208,8 +284,17 @@ cv2.imshow('blur_image',blur_image)
 sobel_image = sobelImage(gray_image)
 cv2.imshow('sobel_image',sobel_image)
 
-canny_image = cannyImage(gray_image)
-cv2.imshow('canny_image', canny_image)
+canny_image1 = canny1(sobel_image)
+cv2.imshow('canny_image1', canny_image1)
+
+canny_image2 = canny2(canny_image1)
+cv2.imshow('canny_image2', canny_image2)
 
 keystroke()
 
+# Print out with
+# ORIGINAL IMAGE
+# SOBEL EDGES ONLY
+# EDGES AFTER CANNY IS APPLIED
+# A. AFTER EDGE THINNING
+# B. AFTER WEEK EDGES ARE INCORPORATED
