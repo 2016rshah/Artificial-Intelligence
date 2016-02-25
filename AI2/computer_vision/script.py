@@ -277,18 +277,28 @@ cv2.imshow('color_image',image)
 
 gray_image = grayImage(image)
 cv2.imshow('gray_image',gray_image)
+if(location == "dog.jpg"):
+	cv2.imwrite("gray_dog.jpg", gray_image)
 
 blur_image = blurImage(gray_image)
 cv2.imshow('blur_image',blur_image)
+if(location == "dog.jpg"):
+	cv2.imwrite("blur_dog.jpg", blur_image)
 
 sobel_image = sobelImage(gray_image)
 cv2.imshow('sobel_image',sobel_image)
+if(location == "dog.jpg"):
+	cv2.imwrite("sobel_dog.jpg", sobel_image)
 
 canny_image1 = canny1(sobel_image)
 cv2.imshow('canny_image1', canny_image1)
+if(location == "dog.jpg"):
+	cv2.imwrite("canny1_dog.jpg", canny_image1)
 
 canny_image2 = canny2(canny_image1)
 cv2.imshow('canny_image2', canny_image2)
+if(location == "dog.jpg"):
+	cv2.imwrite("canny2_dog.jpg", canny_image2)
 
 keystroke()
 
