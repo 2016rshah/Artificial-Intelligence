@@ -136,7 +136,7 @@ def isEdge(img, i, j, lower_t, upper_t):
 	
 	
 	# print(theta)
-	if(g > upper_t):
+	if(g > upper_t * upper_t):
 		return False
 	elif(g < lower_t * lower_t):
 		return True
