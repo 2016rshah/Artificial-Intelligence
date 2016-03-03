@@ -105,9 +105,9 @@ def sobelPixel(img, i, j, threshold):
 	gy = derivs[1]
 
 	if(((gx * gx) + (gy * gy)) > (threshold * threshold)):
-		return (0,0,0) # white pixel
+		return (0,0,0) # black pixel
 	else:
-		return (255, 255, 255) # black pixel
+		return (255, 255, 255) # white pixel
 
 def sobelImage(image):
 	img = image.copy()
@@ -119,10 +119,10 @@ def sobelImage(image):
 			#image is not changed, img is changed
 	return img
 
-def neighbors(img, i, j, di, dj):
-	low = getGvalue(img, i-di, j-di)
-	high = getGvalue(img, i+di, j+dj)
-	# if(low > )
+# def neighbors(img, i, j, di, dj):
+# 	low = getGvalue(img, i-di, j-di)
+# 	high = getGvalue(img, i+di, j+dj)
+# 	# if(low > )
 
 def isEdge(img, i, j, lower_t, upper_t):
 	if(i<1 or j<1 or i>=img.shape[0] or j>=img.shape[1]):
@@ -132,33 +132,15 @@ def isEdge(img, i, j, lower_t, upper_t):
 	gx = derivs[0]
 	gy = derivs[1]
 	g = gx * gx + gy * gy
+	#print(g, lower_t * lower_t, upper_t * upper_t)
+	#print(g)
 
-	
-	
-	# print(theta)
 	if(g > upper_t * upper_t):
 		return False
 	elif(g < lower_t * lower_t):
 		return True
 	else:
-		# theta = atan2(gy, gx) * 8 # Multiply by eight because unit circle split into eights to get lines to check along
-		# if((theta > (-pi) and theta < (pi)) or (theta > (7 * pi) and theta < (-7 * pi))): # horizontal
-		# 	return isEdge(img, i-1, j, lower_t, upper_t) or isEdge(img, i+1, j, lower_t, upper_t) 
-		# elif((theta > (pi) and theta < (3 * pi)) or (theta > (-7 * pi) and theta < (-5 * pi))): # diagonal up
-		# 	return isEdge(img, i-1, j+1, lower_t, upper_t) or isEdge(img, i+1, j-1, lower_t, upper_t) 
-		# elif((theta > (3 * pi) and theta < (5 * pi)) or (theta > (-5 * pi) and theta < (-3 * pi))): # vertical
-		# 	return isEdge(img, i, j-1, lower_t, upper_t) or isEdge(img, i, j+1, lower_t, upper_t) 
-		# elif((theta > (5 * pi) and theta < (7 * pi)) or (theta > (-3 * pi) and theta < (-1 * pi))): # diagonal down
-		# 	return isEdge(img, i-1, j-1, lower_t, upper_t) or isEdge(img, i+1, j+1, lower_t, upper_t)
-		# else:
-		# 	print("something must have been close?")
-		# 	return False
-
-		#return isEdge(img, i-1, j-1, lower_t, upper_t) or isEdge(img, i+1, j+1, lower_t, upper_t) 
-
-		# return isEdge(img, i-1, j, lower_t, upper_t) or isEdge(img, i+1, j, lower_t, upper_t)
-
-		return False
+		return True
 
 def isGreatest(img, p1, p2, p3):
 	derivs1 = getDerivatives(img, p1[0], p1[0])
@@ -181,7 +163,7 @@ def isStrong(img, i, j):
 	g = gx * gx + gy * gy
 
 	theta = atan2(gy, gx) * 8 # Multiply by eight because unit circle split into eights to get lines to check along
-	if((theta > (-pi) and theta < (pi)) or (theta > (7 * pi) and theta < (-7 * pi))): # horizontal
+	if((theta > (-pi) or theta < (pi)) or (theta > (7 * pi) or theta < (-7 * pi))): # or because can never be greater or less
 		# print("horizontal")
 		if(isGreatest(img, (i, j), (i-1, j), (i+1, j))):
 			return False
@@ -209,6 +191,73 @@ def isStrong(img, i, j):
 		# print("something must have been close?")
 		return False
 
+def neighbors(img, i, j, gx, gy):
+	for ii in range(-1, 2):
+		for jj in range(-1, 2):
+			if(img.item(i+ii, j+jj, 0) == 0):
+				print("found neighbor")
+				return True
+			else:
+				print(img.item(i+ii, j+jj, 0))
+				return False
+	# theta = atan2(gy, gx) * 8 # Multiply by eight because unit circle split into eights to get lines to check along
+	# if((theta > (-pi) or theta < (pi)) or (theta > (7 * pi) or theta < (-7 * pi))): # horizontal
+	# 	# print("horizontal")
+	# 	if(img.item(i-1, j, 0) == 0 or img.item(i+1, j, 0) == 0): #neighbors are black
+	# 		return True
+	# 	else:
+	# 		return False
+	# elif((theta > (pi) and theta < (3 * pi)) or (theta > (-7 * pi) and theta < (-5 * pi))): # diagonal up
+	# 	# print("diagonal up")
+	# 	if(img.item(i, j, 0) == 0 or img.item(i-1, j+1, 0) == 0):
+	# 		#neighbors are black
+	# 		return True
+	# 	else:
+	# 		return False
+	# elif((theta > (3 * pi) and theta < (5 * pi)) or (theta > (-5 * pi) and theta < (-3 * pi))): # vertical
+	# 	# print("vertical")
+	# 	if(img.item(i, j-1, 0) == 0 or img.item(i, j+1, 0) == 0): 
+	# 		#neighbors are black
+	# 		return True
+	# 	else:
+	# 		return False
+	# elif((theta > (5 * pi) and theta < (7 * pi)) or (theta > (-3 * pi) and theta < (-1 * pi))): # diagonal down
+	# 	# print("diagonal down")
+	# 	if(img.item(i-1, j-1, 0) == 0 or img.item(i+1, j+1, 0) == 0):
+	# 		#neighbors are black
+	# 		return True
+	# 	else:
+	# 		return False
+	# else:
+	# 	# print("something must have been close?")
+	# 	return True
+
+
+def isEdge2(img, i, j, lower_t, upper_t):
+	if(i<1 or j<1 or i>=img.shape[0] or j>=img.shape[1]):
+		return False
+
+	derivs = getDerivatives(img, i, j)
+	gx = derivs[0]
+	gy = derivs[1]
+	g = gx * gx + gy * gy
+	print(g, lower_t * lower_t, upper_t * upper_t)
+
+	if(g > upper_t * upper_t):
+		return False
+	elif(g < lower_t * lower_t):
+		return True
+	else:
+		print("mid threshold")
+		#contested edge
+		if(neighbors(img, i, j, gx, gy)):
+			print("Filled in a pixel during canny2")
+			return True
+		else:
+			print("Apparently not neighboring anything")
+			return False
+
+
 def canny1(image):
 	img = image.copy()
 	num_rows = img.shape[0] - 4
@@ -216,7 +265,7 @@ def canny1(image):
 	#Pass 1 of canny
 	for i in range(2, num_rows):
 		for j in range(2, num_cols):
-			if(isEdge(image, i, j, MID_THRESHOLD-DT, MID_THRESHOLD+DT)): #image is not changed, img is changed
+			if(isEdge(image, i, j, MID_THRESHOLD-(MID_THRESHOLD/2), MID_THRESHOLD+DT)): #image is not changed, img is changed
 				setPixel(img, i, j, (255, 255, 255)) 
 	return img
 def canny2(image):
@@ -226,15 +275,9 @@ def canny2(image):
 	for i in range(2, num_rows):
 		for j in range(2, num_cols):
 			if(img.item(i, j, 0) == 0): # black, and therefore edge
-				if(isStrong(image, i, j)): 
-					setPixel(img, i, j, (0, 0, 0)) # strong edges
-				else:
-					setPixel(img, i, j, (255, 255, 255))
+				if(isEdge2(image, i, j, MID_THRESHOLD-(MID_THRESHOLD/2), MID_THRESHOLD)): 
+					setPixel(img, i, j, (0, 0, 0)) # strong edges, fill with black
 	return img
-
-def cannyImage(image):
-	return canny1(image)
-	
 
 def keystroke():
 	#Escape key to exit
@@ -269,7 +312,7 @@ def keystroke():
 location = sys.argv[1]
 
 MID_THRESHOLD = int(sys.argv[2])
-DT = 10
+DT = 25
 
 #if I want to read from URL, do that here. Until them, I treat it as a local url 
 image = cv2.imread(location)
