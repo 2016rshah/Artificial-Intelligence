@@ -55,9 +55,6 @@ def setPixel(img, row, col, newPixel):
 	img.itemset((row, col, 1), newPixel[1])
 	img.itemset((row, col, 2), newPixel[2])
 
-def getPixel(img, row, col):
-	return (img.item(row, col, 0), img.item(row, col, 1), img.item(row, col, 2))
-	
 def grayPixel(r, g, b):
 	pxVal = .3 * r + .59 * g +  .11 * b
 	return (pxVal, pxVal, pxVal)
@@ -203,7 +200,7 @@ def canny2Pixel(img, row, col):
 	g1 = gx1 * gx1 + gy1 * gy1
 
 	lt = THRESHOLD
-	ht = THRESHOLD * 2.5
+	ht = THRESHOLD * 2
 
 	if((g1 > lt * lt) and (g1 < ht * ht)): #within boundary
 		#check if neighbours are edges. If so, say its an edge, otherwise not
@@ -230,21 +227,41 @@ def canny2Image(image):
 				setPixel(img, i, j, r)
 	return img
 
-def drawLine(img, row, col):
+def drawLine(image, row, col):
 	'''return new image with line'''
-	gx, gy = getDerivatives(img, row, col)
-	# if(gx is not 0):
-	# 	slope = int(gy/gx)
-	# else:
-	# 	slope = 0
-	slope = 1
-	num_rows = img.shape[0]
-	for i in range(0, row):
-		setPixel(img, i, (row-i) * -slope, RED_PIXEL)
-	for i in range(row, num_rows):
-		setPixel(img, i, -slope * i, RED_PIXEL)
+	img = image.copy()
+	num_rows = img.shape[0]-2
+	num_cols = img.shape[1]-2
+	gs = getDerivatives(img, row, col)
+	gx = float(gs[0])
+	gy = float(gs[1])
+	if(gy == 0 or gx == 0):
+		return img
+	slope = gy / gx
+	print(gy, gx, slope)
+	if(abs(slope) >= 1):
+		slope = slope
+		for i in range(1, num_rows-1):
+			j = (slope * (row-i) + col)
+			if(j > 0 and j < (num_cols - 1)):
+				setPixel(img, i, j, RED_PIXEL)
+	else:
+		slope = float(1)/float(slope)
+		for j in range(1, num_cols-1):
+			i = (slope * (col-j) + row)
+			if(i > 0 and i<(num_rows - 1)):
+				setPixel(img, i, j, RED_PIXEL)
 	return img
 
+def drawLines(image):
+	img = image.copy()
+	num_rows = img.shape[0]-2
+	num_cols = img.shape[1]-2
+	for i in range(1, num_rows - 1 ):
+		for j in range(1, num_cols-1):
+			if(image.item(i, j, 0) == 0):
+				img = drawLine(img, i, j)
+	return img
 
 image = cv2.imread(LOCATION)
 cv2.imshow('color_image',image)
@@ -274,7 +291,17 @@ cv2.imshow('canny2_image', canny2_image)
 if(LOCATION == "dog.jpg"):
 	cv2.imwrite("canny2_dog.jpg", canny2_image)
 
-#cv2.imshow('line_image', drawLine(gray_image, 20, 20))
+# cv2.imshow('cannydiff_image', (canny1_image ^ canny2_image))
+lined_image = drawLines(canny2_image)
+cv2.imshow('line_image', lined_image)
+cv2.imwrite("lined_image.jpg", lined_image)
 
+
+#given a point - (p, q)
+#and an angle - theta
+#such that the slope of the line going 
+#through (p, q) is tan(theta)
+#what is the closest distance of the 
+#line to the origin
 
 keystroke()
