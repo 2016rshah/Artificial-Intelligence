@@ -8,7 +8,7 @@ LOCATION = sys.argv[1]
 THRESHOLD = int(sys.argv[2])
 BLACK_PIXEL = (0, 0, 0)
 WHITE_PIXEL = (255,255,255)
-RED_PIXEL = (255, 0, 0)
+RED_PIXEL = (0, 0, 255)
 
 def keystroke():
 	#Escape key to exit
@@ -48,12 +48,12 @@ def setPixel(img, row, col, newPixel):
 	'''
 		img is cv2 image
 		row, col are obvious
-		newPixel is a tuple with (r, g, b) values that you want to set
+		newPixel is a tuple with (b, g, r) values that you want to set
 		does not return anything, but changes img value
 	'''
-	img.itemset((row, col, 0), newPixel[0])
-	img.itemset((row, col, 1), newPixel[1])
-	img.itemset((row, col, 2), newPixel[2])
+	img.itemset(row, col, 0, newPixel[0])
+	img.itemset(row, col, 1, newPixel[1])
+	img.itemset(row, col, 2, newPixel[2])
 
 def grayPixel(r, g, b):
 	pxVal = .3 * r + .59 * g +  .11 * b
@@ -126,6 +126,7 @@ def getDerivatives(img, i, j):
 	gy += (2) * img.item(i, j+1, 0) # bottom middle
 	gy += img.item(i+1, j+1, 0) # bottom right
 
+	#print("get derivatives", gx, gy)
 	return (gx, gy)
 
 def sobelPixel(img, row, col):
@@ -151,7 +152,7 @@ def sobelImage(image):
 def neighbours(gx, gy):
 	'''returns ((dx1, dy1), (dx2, dy2))'''
 	theta = atan2(gy, gx) * 8 # Multiply by eight because unit circle split into eights to get lines to check along
-	print(theta)
+	# print(theta)
 	if((theta > (pi) and theta < (3 * pi)) or (theta > (-7 * pi) and theta < (-5 * pi))): # diagonal up
 		return ((1, -1), (-1, 1))
 	elif((theta > (3 * pi) and theta < (5 * pi)) or (theta > (-5 * pi) and theta < (-3 * pi))): # vertical
@@ -238,7 +239,7 @@ def drawLine(image, row, col):
 	if(gy == 0 or gx == 0):
 		return img
 	slope = gy / gx
-	print(gy, gx, slope)
+	# print(gy, gx, slope)
 	if(abs(slope) >= 1):
 		slope = slope
 		for i in range(1, num_rows-1):
@@ -253,15 +254,65 @@ def drawLine(image, row, col):
 				setPixel(img, i, j, RED_PIXEL)
 	return img
 
-def drawLines(image):
+def incVotes(votes, image, row, col):
 	img = image.copy()
-	num_rows = img.shape[0]-2
-	num_cols = img.shape[1]-2
-	for i in range(1, num_rows - 1 ):
+	num_rows = img.shape[0]
+	num_cols = img.shape[1]
+	gs = getDerivatives(img, row, col)
+	gx = float(gs[0])
+	gy = float(gs[1])
+	if(gy == 0 or gx == 0):
+		return votes
+	slope = gy / gx
+	if(abs(slope) >= 1):
+		slope = slope
+		for i in range(0, num_rows):
+			j = slope * (i-row) + col
+			if(j > 0 and j < (num_cols-1)):
+				votes[i][int(j)]+=1
+	else:
+		slope = 1 / slope
+		for j in range(0, num_cols):
+			i = slope * (j-col) + row
+			if(i > 0 and i<(num_rows-1)):
+				votes[int(i)][j]+=1
+	return votes 
+
+def drawLines(canny, gray):
+	num_rows = gray.shape[0]
+	num_cols = gray.shape[1]
+
+	#initialize voting array
+	votes = []
+	for i in range(0, num_rows):
+		row = []
+		for j in range(0, num_cols):
+			row.append(0)
+		votes.append(row)
+
+	#poll the image
+	for i in range(1, num_rows - 1):
 		for j in range(1, num_cols-1):
-			if(image.item(i, j, 0) == 0):
-				img = drawLine(img, i, j)
-	return img
+			if(canny.item(i, j, 0) == 0):
+				votes = incVotes(votes, gray, i, j)
+	# print(votes)
+	#scale resulting image based on votes
+	res = gray.copy()
+	m = max(map(max, votes))
+	# print(votes)
+	# print(m)
+	for i in range(0, num_rows):
+		for j in range(0, num_cols):
+			v = votes[i][j]
+			if(v < m):
+				p = votes[i][j] * 255 / m 
+				setPixel(res, i, j, (p,p,p))
+			else:
+				for di in range(-2, 3):
+					for dj in range(-2, 3):
+						setPixel(res, i+di, j+dj, RED_PIXEL)
+
+	return res
 
 image = cv2.imread(LOCATION)
 cv2.imshow('color_image',image)
@@ -292,7 +343,7 @@ if(LOCATION == "dog.jpg"):
 	cv2.imwrite("canny2_dog.jpg", canny2_image)
 
 # cv2.imshow('cannydiff_image', (canny1_image ^ canny2_image))
-lined_image = drawLines(canny2_image)
+lined_image = drawLines(canny2_image, gray_image)
 cv2.imshow('line_image', lined_image)
 cv2.imwrite("lined_image.jpg", lined_image)
 
