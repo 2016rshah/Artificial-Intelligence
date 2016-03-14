@@ -229,7 +229,8 @@ def canny2Image(image):
 	return img
 
 def getLine(image, row, col):
-	'''returns a list of (x,y) values'''
+	'''takes a grayscale image
+	returns a list of (x,y) values'''
 	img = image.copy()
 	num_rows = img.shape[0]
 	num_cols = img.shape[1]
@@ -253,6 +254,20 @@ def getLine(image, row, col):
 			if(i > 0 and i<(num_rows-1)):
 				res.append((int(i), j))
 	return res
+
+def maximums(votes):
+	'''returns tuple
+	first value is maximum value
+	second value is maximum value's location'''
+	maxValue = 0
+	maxLocation = (0,0)
+	for i in range(0, len(votes)):
+		for j in range(0, len(votes[i])):
+			if(votes[i][j] > maxValue):
+				maxValue = votes[i][j]
+				maxLocation = (i,j)
+	return (maxValue, maxLocation)
+
 
 def drawLines(canny, gray):
 	'''returns tuple containing
@@ -278,15 +293,17 @@ def drawLines(canny, gray):
 					votes[pt[0]][pt[1]] += 1
 	# print(votes)
 	#scale resulting image based on votes
+	maxValue, maxLocation = maximums(votes)
 	res = gray.copy()
-	m = max(map(max, votes))
+	
+
 	# print(votes)
 	# print(m)
 	for i in range(0, num_rows):
 		for j in range(0, num_cols):
 			v = votes[i][j]
-			if(v < m):
-				p = votes[i][j] * 255 / m 
+			if(v < maxValue):
+				p = votes[i][j] * 255 / maxValue 
 				setPixel(res, i, j, (p,p,p))
 			else:
 				for di in range(-2, 3):
@@ -295,9 +312,43 @@ def drawLines(canny, gray):
 
 	return (res, votes)
 
-# def drawCircle(gray, votes):
-# 	img = gray.copy()
-# 	for vote in votes:
+def distance(p1, p2):
+	x1, y1 = p1
+	x2, y2 = p2
+	return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
+
+def circle(image, center, radius):
+	img = image.copy()
+	num_rows = img.shape[0]
+	num_cols = img.shape[1]
+	for i in range(2, num_rows-2):
+		for j in range(2, num_cols-2):
+			if(abs(distance(center, (i,j)) - radius) < 500):
+				setPixel(img, i, j, RED_PIXEL)
+			else:
+				setPixel(img, i, j, WHITE_PIXEL)
+	return img
+
+
+def drawCircle(gray, maxValue, maxLocation):
+	img = gray.copy()
+	num_rows = img.shape[0]
+	num_cols = img.shape[1]
+	radii = {}
+	for i in range(2, num_rows-2):
+		for j in range(2, num_cols-2):
+			line = getLine(gray, i, j)
+			if(maxLocation in line):
+				d = abs(distance(maxLocation, (i,j)))
+				if(d in radii):
+					radii[d] += 1
+				else:
+					radii[d] = 1
+	print(radii)
+
+	radiusGuess = max(radii.iterkeys(), key=(lambda key: radii[key]))
+
+	return circle(img, maxLocation, radiusGuess)
 
 
 
@@ -335,6 +386,9 @@ lined_image, polls = drawLines(canny2_image, gray_image)
 cv2.imshow('line_image', lined_image)
 cv2.imwrite("lined_image.jpg", lined_image)
 
-# circle_image = drawCircle(gray_image, votes) #should you only calculate on edges or calculate everywhere?
+maxValue, maxLocation = maximums(polls)
+circle_image = drawCircle(gray_image, maxValue, maxLocation) #should you only calculate on edges or calculate everywhere?
+cv2.imshow('circle_image', circle_image)
+cv2.imwrite("circle_image.jpg", circle_image)
 
 keystroke()
