@@ -228,57 +228,36 @@ def canny2Image(image):
 				setPixel(img, i, j, r)
 	return img
 
-def drawLine(image, row, col):
-	'''return new image with line'''
-	img = image.copy()
-	num_rows = img.shape[0]-2
-	num_cols = img.shape[1]-2
-	gs = getDerivatives(img, row, col)
-	gx = float(gs[0])
-	gy = float(gs[1])
-	if(gy == 0 or gx == 0):
-		return img
-	slope = gy / gx
-	# print(gy, gx, slope)
-	if(abs(slope) >= 1):
-		slope = slope
-		for i in range(1, num_rows-1):
-			j = (slope * (row-i) + col)
-			if(j > 0 and j < (num_cols - 1)):
-				setPixel(img, i, j, RED_PIXEL)
-	else:
-		slope = float(1)/float(slope)
-		for j in range(1, num_cols-1):
-			i = (slope * (col-j) + row)
-			if(i > 0 and i<(num_rows - 1)):
-				setPixel(img, i, j, RED_PIXEL)
-	return img
-
-def incVotes(votes, image, row, col):
+def getLine(image, row, col):
+	'''returns a list of (x,y) values'''
 	img = image.copy()
 	num_rows = img.shape[0]
 	num_cols = img.shape[1]
 	gs = getDerivatives(img, row, col)
 	gx = float(gs[0])
 	gy = float(gs[1])
+	res = []
 	if(gy == 0 or gx == 0):
-		return votes
+		return res
 	slope = gy / gx
 	if(abs(slope) >= 1):
 		slope = slope
 		for i in range(0, num_rows):
 			j = slope * (i-row) + col
 			if(j > 0 and j < (num_cols-1)):
-				votes[i][int(j)]+=1
+				res.append((i, int(j)))
 	else:
 		slope = 1 / slope
 		for j in range(0, num_cols):
 			i = slope * (j-col) + row
 			if(i > 0 and i<(num_rows-1)):
-				votes[int(i)][j]+=1
-	return votes 
+				res.append((int(i), j))
+	return res
 
 def drawLines(canny, gray):
+	'''returns tuple containing
+	the resulting image with lines drawn based on votes and center
+	the number of votes for each pixel based on how many lines pass through'''
 	num_rows = gray.shape[0]
 	num_cols = gray.shape[1]
 
@@ -294,7 +273,9 @@ def drawLines(canny, gray):
 	for i in range(1, num_rows - 1):
 		for j in range(1, num_cols-1):
 			if(canny.item(i, j, 0) == 0):
-				votes = incVotes(votes, gray, i, j)
+				linePoints = getLine(gray, i, j)
+				for pt in linePoints:
+					votes[pt[0]][pt[1]] += 1
 	# print(votes)
 	#scale resulting image based on votes
 	res = gray.copy()
@@ -312,7 +293,13 @@ def drawLines(canny, gray):
 					for dj in range(-2, 3):
 						setPixel(res, i+di, j+dj, RED_PIXEL)
 
-	return res
+	return (res, votes)
+
+# def drawCircle(gray, votes):
+# 	img = gray.copy()
+# 	for vote in votes:
+
+
 
 image = cv2.imread(LOCATION)
 cv2.imshow('color_image',image)
@@ -343,16 +330,11 @@ if(LOCATION == "dog.jpg"):
 	cv2.imwrite("canny2_dog.jpg", canny2_image)
 
 # cv2.imshow('cannydiff_image', (canny1_image ^ canny2_image))
-lined_image = drawLines(canny2_image, gray_image)
+lined_image, polls = drawLines(canny2_image, gray_image)
+
 cv2.imshow('line_image', lined_image)
 cv2.imwrite("lined_image.jpg", lined_image)
 
-
-#given a point - (p, q)
-#and an angle - theta
-#such that the slope of the line going 
-#through (p, q) is tan(theta)
-#what is the closest distance of the 
-#line to the origin
+# circle_image = drawCircle(gray_image, votes) #should you only calculate on edges or calculate everywhere?
 
 keystroke()
