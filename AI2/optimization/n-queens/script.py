@@ -7,24 +7,9 @@ from math import factorial
 import numpy as np
 import matplotlib.pyplot as plt
 
-def createBoard(s):
-	# #make this a list comprehension
-	# n = len(s)
-	# board = []
-	# for i in range(0, n):
-	# 	row = []
-	# 	for j in range(0, n):
-	# 		if(int(s[i])-1 == j):
-	# 			row.append(1) 
-	# 		else:
-	# 			row.append(0)
-	# 	board.append(row)
-	# return board
-	return s
-
-def printBoard(board):
-	for i in range(0, len(board)):
-		print(board[i])
+#Board represented as:
+# [0,1,2,3]
+# Would be a 4x4 board with queens going down the diagonal
 
 def numCollisions(board):
 	cs = 0
