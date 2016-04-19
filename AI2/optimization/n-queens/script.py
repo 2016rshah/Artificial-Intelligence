@@ -15,48 +15,46 @@ def numCollisions(board):
 	cs = 0
 	n = len(board)
 	for i in range(0, n):
-		for j in range(0, n):
-			if(board[i] == j):
-				#check 
-				di = i 
-				dj = j 
-				while(di < n and dj < n and di < n and dj < n):
-					if(board[di] == dj):
-						cs += 1
-						# print(di, dj)
-					di += 1
-					dj += 1
-				cs -= 1
+		j = board[i] 
+		di = i 
+		dj = j 
+		while(di < n and dj < n and di < n and dj < n):
+			if(board[di] == dj):
+				cs += 1
+				# print(di, dj)
+			di += 1
+			dj += 1
+		cs -= 1
 
-				di = i
-				dj = j
-				while(di >= 0 and dj >= 0 and di < n and dj < n):
-					if(board[di] ==  dj):
-						cs += 1
-						# print(di, dj)
-					di -= 1
-					dj -= 1
-				cs -= 1
+		di = i
+		dj = j
+		while(di >= 0 and dj >= 0 and di < n and dj < n):
+			if(board[di] ==  dj):
+				cs += 1
+				# print(di, dj)
+			di -= 1
+			dj -= 1
+		cs -= 1
 
-				di = i 
-				dj = j
-				while(di >= 0 and dj >= 0 and di < n and dj < n):
-					if(board[di] == dj):
-						cs += 1
-						# print(di, dj)
-					di += 1
-					dj -= 1
-				cs -= 1
+		di = i 
+		dj = j
+		while(di >= 0 and dj >= 0 and di < n and dj < n):
+			if(board[di] == dj):
+				cs += 1
+				# print(di, dj)
+			di += 1
+			dj -= 1
+		cs -= 1
 
-				di = i
-				dj = j 
-				while(di >= 0 and dj >= 0 and di< n and dj < n):
-					if(board[di] == dj):
-						cs += 1
-						# print(di, dj)
-					di -= 1
-					dj += 1
-				cs -= 1
+		di = i
+		dj = j 
+		while(di >= 0 and dj >= 0 and di< n and dj < n):
+			if(board[di] == dj):
+				cs += 1
+				# print(di, dj)
+			di -= 1
+			dj += 1
+		cs -= 1
 	return cs
 
 def nchoose2(n):
@@ -121,8 +119,8 @@ def partA(board):
 def plotPartA():
 	plt.figure(1)
 	lb = 4
-	ub = 10
-	numTrials = 5
+	ub = 18
+	numTrials = 3
 	ns = [x for x in range(lb, ub)]
 	# ws = [] #swaps
 	wss = [[] for _ in range(lb,ub)]
@@ -187,9 +185,9 @@ def partB(board):
 
 def plotPartB():
 	plt.figure(2)
-	lb = 5
-	ub = 9
-	numTrials = 1
+	lb = 4
+	ub = 18
+	numTrials = 3
 	ns = [x for x in range(lb, ub)]
 	# ws = [] #swaps
 	wss = [[] for _ in range(lb,ub)]
