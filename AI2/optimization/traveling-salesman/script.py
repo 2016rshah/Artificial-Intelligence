@@ -1,6 +1,11 @@
 from math import sqrt
 import matplotlib.pyplot as plt
 
+
+THRESHOLD_ONE = 10000
+THRESHOLD_TWO = 100
+
+#Internal class for representing locations
 class Location:
 	def __init__(self, num, st):
 		''' num :: Int -- the name/location number of the city
@@ -25,6 +30,7 @@ class Location:
 	def __repr__(self):
 		return str(self)
 
+#Given list of locations, return distance to travel through them
 def distanceTraveled(locations):
 	''' takes a list of locations
 		returns the total distance it would take to travel the entire path '''
@@ -45,36 +51,15 @@ def allPossibleSwaps(s):
 				yield s #generator that won't store everything in memory
 	# return ss
 
+#Input stuff
 def getLocations(): 
-	f = open("input.txt", 'r')
+	f = open("input_large.txt", 'r')
 	x = int(f.readline())
 	fs = [f.readline() for _ in range(x)]
 	fs = [Location(i, fs[i]) for i in range(len(fs))]
 	return fs
 
-def findBestSwap(fs):
-	#this is the best for one swap, but then you feed this best swap back in to get an even better guess
-	originalMin = distanceTraveled(fs)
-	currMin = originalMin
-	bestSwap = list(fs)
-	# print("starting searching for better swap of current best:", currMin)
-	for swap in allPossibleSwaps(fs):
-		d = distanceTraveled(swap)
-		# print(d - currMin)
-		if(d < currMin):
-			currMin = d
-			bestSwap = list(swap)
-			# print("found new best swap:", currMin)
-
-	#recursive solution:
-	# if(originalMin is not currMin):
-	# 	print("recursing with new best of: ", currMin)
-	# return findBestSwap(bestSwap)
-
-	#iterative solution:
-	return bestSwap
-
-
+#Cycle through list until you're starting at location 1
 def startFrom1(fs):
 	''' given a list of locations
 		return a list of locations
@@ -83,20 +68,8 @@ def startFrom1(fs):
 	while (fs[0].name is not 1):
 		fs.append(fs.pop(0))
 	return fs
-	
 
-def toPoint(l):
-	return [l.lat, l.lon]
-
-def createEdges(xs):
-	ys = []
-	for i in range(0, len(xs)-1):
-		point = xs[i]
-		point2 = xs[i+1]
-		ys.append([[point.lat, point2.lon], [point.lon, point2.lat]])
-	ys.append([toPoint(xs[0]), toPoint(xs[len(xs)-1])])
-	return ys
-
+#output stuff
 def plotPath(ls):
 	#points
 	xs = map((lambda x: x.lat), ls)
@@ -112,13 +85,40 @@ def plotPath(ls):
 	point2 = ls[len(ls)-1]
 	plt.plot([point.lat, point2.lat], [point.lon, point2.lon])
 
+#actual AI stuff
+def findBestSwap(fs):
+	#this is the best for one swap, but then you feed this best swap back in to get an even better guess
+	originalMin = distanceTraveled(fs)
+	currMin = originalMin
+	bestSwap = list(fs)
+	swapsSinceImprovement = 0
+	for swap in allPossibleSwaps(fs):
+		d = distanceTraveled(swap)
+		if(d < currMin):
+			print("improved to", d)
+			swapsSinceImprovement = 0
+			currMin = d
+			bestSwap = list(swap)
+		else:
+			swapsSinceImprovement += 1
+		if(swapsSinceImprovement > THRESHOLD_ONE):
+			print("haven't improved in a while, breaking")
+			break
+	#recursive solution:
+	# if(originalMin is not currMin):
+	# 	print("recursing with new best of: ", currMin)
+	# return findBestSwap(bestSwap)
+	#iterative solution:
+	return bestSwap
 
 fs = getLocations()
-findBestSwap(fs)
+print(len(fs))
 currMin = distanceTraveled(fs)
+print(currMin)
 currSwap = list(fs)
 swapsSinceImprovement = 0
-for i in range(0, 1000):
+plt.ion()
+for i in range(0, 100):
 	bestswap = findBestSwap(currSwap)
 	d = distanceTraveled(bestswap)
 	if(d < currMin):
@@ -126,16 +126,21 @@ for i in range(0, 1000):
 		currSwap = list(bestswap)
 		currMin = d
 		swapsSinceImprovement = 0
+		plotPath(currSwap)
+		plt.pause(0.05)
 	else:
+		print("did not improve")
 		swapsSinceImprovement += 1
-	if(swapsSinceImprovement > 100):
+	if(swapsSinceImprovement > THRESHOLD_TWO):
 		print("Haven't improved in about ", swapsSinceImprovement, " swaps, so exiting at")
 		break
-	# print("iterating")
 
 bestPath = startFrom1(currSwap)
 print(bestPath)
 print(distanceTraveled(bestPath))
 plotPath(bestPath)
-plt.show()
+
+while True:
+    plt.pause(0.05)
+
 
