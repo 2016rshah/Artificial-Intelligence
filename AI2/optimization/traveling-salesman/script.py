@@ -30,6 +30,14 @@ class Location:
 	def __repr__(self):
 		return str(self)
 
+#Input stuff
+def getLocations(): 
+	f = open("input_medium.txt", 'r')
+	x = int(f.readline())
+	fs = [f.readline() for _ in range(x)]
+	fs = [Location(i, fs[i]) for i in range(len(fs))]
+	return fs
+
 #Given list of locations, return distance to travel through them
 def distanceTraveled(locations):
 	''' takes a list of locations
@@ -51,14 +59,6 @@ def allPossibleSwaps(s):
 				yield s #generator that won't store everything in memory
 	# return ss
 
-#Input stuff
-def getLocations(): 
-	f = open("input_large.txt", 'r')
-	x = int(f.readline())
-	fs = [f.readline() for _ in range(x)]
-	fs = [Location(i, fs[i]) for i in range(len(fs))]
-	return fs
-
 #Cycle through list until you're starting at location 1
 def startFrom1(fs):
 	''' given a list of locations
@@ -72,6 +72,7 @@ def startFrom1(fs):
 #output stuff
 def plotPath(ls):
 	#points
+	plt.clf()
 	xs = map((lambda x: x.lat), ls)
 	ys = map((lambda x: x.lon), ls)
 	plt.scatter(xs, ys)
@@ -118,7 +119,7 @@ print(currMin)
 currSwap = list(fs)
 swapsSinceImprovement = 0
 plt.ion()
-for i in range(0, 100):
+for i in range(0, 10000):
 	bestswap = findBestSwap(currSwap)
 	d = distanceTraveled(bestswap)
 	if(d < currMin):
@@ -129,7 +130,7 @@ for i in range(0, 100):
 		plotPath(currSwap)
 		plt.pause(0.05)
 	else:
-		print("did not improve")
+		# print("did not improve")
 		swapsSinceImprovement += 1
 	if(swapsSinceImprovement > THRESHOLD_TWO):
 		print("Haven't improved in about ", swapsSinceImprovement, " swaps, so exiting at")
