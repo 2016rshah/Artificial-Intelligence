@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 THRESHOLD_ONE = 10000
 THRESHOLD_TWO = 100
 
+# CACHE = set()
+
 #Internal class for representing locations
 class Location:
 	def __init__(self, num, st):
@@ -55,8 +57,11 @@ def allPossibleSwaps(s):
 		for j in range(0, len(s)):
 			# if(i is not j):
 				s[i], s[j] = s[j], s[i]
-				# ss.append(s)
+				# if(str(s) not in CACHE):
+				# 	CACHE.add(str(s))
 				yield s #generator that won't store everything in memory
+				# else:
+				# 	print("cache helped")
 	# return ss
 
 #Cycle through list until you're starting at location 1
@@ -96,7 +101,7 @@ def findBestSwap(fs):
 	for swap in allPossibleSwaps(fs):
 		d = distanceTraveled(swap)
 		if(d < currMin):
-			print("improved to", d)
+			# print("improved to", d)
 			swapsSinceImprovement = 0
 			currMin = d
 			bestSwap = list(swap)
@@ -112,25 +117,31 @@ def findBestSwap(fs):
 	#iterative solution:
 	return bestSwap
 
+
+plt.ion()
+distanceImprovedSinceLastSwap = 0
 fs = getLocations()
 print(len(fs))
 currMin = distanceTraveled(fs)
 print(currMin)
 currSwap = list(fs)
 swapsSinceImprovement = 0
-plt.ion()
 for i in range(0, 10000):
 	bestswap = findBestSwap(currSwap)
 	d = distanceTraveled(bestswap)
 	if(d < currMin):
 		print("Found new best distance: ", d)
+		if(distanceImprovedSinceLastSwap > 250):
+			distanceImprovedSinceLastSwap = 0
+			plotPath(currSwap)
+			plt.pause(0.05)
+		else:
+			distanceImprovedSinceLastSwap += (currMin - d)
+			print("not a great improvement", distanceImprovedSinceLastSwap)
 		currSwap = list(bestswap)
 		currMin = d
 		swapsSinceImprovement = 0
-		plotPath(currSwap)
-		plt.pause(0.05)
 	else:
-		# print("did not improve")
 		swapsSinceImprovement += 1
 	if(swapsSinceImprovement > THRESHOLD_TWO):
 		print("Haven't improved in about ", swapsSinceImprovement, " swaps, so exiting at")
