@@ -53,15 +53,23 @@ def distanceTraveled(locations):
 	d += locations[x - 1].distanceTo(locations[0])
 	return d 
 
+def swap(xs, i, j):
+	#out of place swap
+	c = list(xs)
+	c[i], c[j] = c[j], c[i]
+	return c
+
 def allPossibleSwaps(s):
-	ss = []
+	# ss = []
 	for i in range(0, len(s)):
 		for j in range(0, len(s)):
 			# if(i is not j):
 				s[i], s[j] = s[j], s[i]
 				# if(str(s) not in CACHE):
 				# 	CACHE.add(str(s))
-				yield s #generator that won't store everything in memory
+				yield s
+				# ss.append(swap(s,i,j))
+				# yield cs #generator that won't store everything in memory
 				# else:
 				# 	print("cache helped")
 	# return ss
@@ -174,13 +182,14 @@ def isCrossed(fs, p1, p2):
 	else:
 		return True
 
-def findAndSwap(fs):
+def findAndRev(fs):
 	for i in range(0, len(fs)):
-		for j in range(i, len(fs)):
-			if(i is not j):
+		for j in range(i, len(fs)-1):
+			if(not i == j):
 				if isCrossed(fs, fs[i], fs[j]):
 					print("swapped", i, j)
-					fs[i], fs[j] = fs[j], fs[i]
+					# fs[i], fs[j] = fs[j], fs[i]
+					fs[i:(j+1)] = reversed(fs[i:(j+1)])
 					return fs #sometimes, undoing one cross creates another cross, and it'll just uncross and recross
 	return False
 
@@ -188,11 +197,11 @@ def uncrossEverything(fs):
 	foundSwap = True
 	bestPath = list(fs)
 	while foundSwap:
-		newSwap = findAndSwap(fs) #might create a cross which is worse
-		if(newSwap is False):
+		newPath = findAndRev(fs) #might create a cross which is worse
+		if(newPath is False):
 			break
 		else:
-			bestPath = newSwap
+			bestPath = newPath
 			print(distanceTraveled(bestPath))
 			plotPath(bestPath)
 			plt.pause(0.05)
@@ -208,7 +217,7 @@ def combineMethods(fs):
 	for i in range(0, 10000):
 		bestswap = findBestSwap(currSwap)
 		d = distanceTraveled(bestswap)
-		if(d < currMin):
+		if(d < currMin and abs(d - currMin) > 1):
 			print("Found new best distance: ", d)
 			if(distanceImprovedSinceLastSwap > 250):
 				distanceImprovedSinceLastSwap = 0
@@ -217,9 +226,12 @@ def combineMethods(fs):
 			else:
 				distanceImprovedSinceLastSwap += (currMin - d)
 				print("not a great improvement", distanceImprovedSinceLastSwap)
-			currSwap = uncrossEverything(bestswap) #the problem with doing this is that uncrossing sometimes isn't a good thing
+			currSwap = list(bestswap)
 			currMin = d
 			swapsSinceImprovement = 0
+			#now uncross everything
+			currSwap = uncrossEverything(currSwap)
+			currMin = distanceTraveled(currSwap)
 		else:
 			swapsSinceImprovement += 1
 		if(swapsSinceImprovement > THRESHOLD_TWO):
@@ -229,12 +241,14 @@ def combineMethods(fs):
 
 def main():
 	plt.ion()
-	fs = getLocations("input.txt")
+	fs = getLocations("input_200.txt")
 
-	bestPath = uncrossEverything(fs)
+	# bestPath = uncrossEverything(fs)
 
-	bestPath = loopThroughAllPossibilities(bestPath)
+	# bestPath = loopThroughAllPossibilities(fs)
 	
+	bestPath = combineMethods(fs)
+
 	bestPath = startFrom1(bestPath)
 	
 	print(bestPath)
