@@ -1,5 +1,6 @@
 from math import sqrt
 import matplotlib.pyplot as plt
+from random import shuffle
 
 
 THRESHOLD_ONE = 10000
@@ -83,6 +84,8 @@ def startFrom1(fs):
 		'''
 	while (fs[0].name is not 1):
 		fs.append(fs.pop(0))
+	if(fs[1].name > fs[len(fs)-1].name):
+		fs[1:len(fs)] = reversed(fs[1:len(fs)])
 	return fs
 
 #output stuff
@@ -90,9 +93,11 @@ def plotPath(ls):
 	#points
 	plt.clf()
 
+	plt.gca().invert_yaxis()
 	xs = map((lambda x: x.lat), ls)
 	ys = map((lambda x: x.lon), ls)
-	plt.scatter(xs, ys)
+	# print(ys)
+	plt.scatter(xs, ys, s=5)
 
 	#path
 	for i in range(0, len(ls)-1):
@@ -174,10 +179,10 @@ def untangle(fs):
 				if(incDiff < 0):
 					currPath[b:(c+1)] = reversed(currPath[b:(c+1)])
 					currDistance = currDistance + incDiff
-					print("curr distance", currDistance)
+					# print("curr distance", currDistance)
 					shouldLoop = True
-		plotPath(currPath)
-		plt.pause(0.05)
+		# plotPath(currPath)
+		# plt.pause(0.05)
 	return currPath, currDistance
 
 def combineMethods(fs):
@@ -205,21 +210,59 @@ def combineMethods(fs):
 		# 	break
 	return currSwap
 
+def shuffleAndUntangle(fs):
+	currPath = list(fs)
+	currDistance = float(open('curr_results.txt', "r").readline().strip())
+	print("looking for an improvement on", currDistance)
+	#86479.99063636374
+	while True:
+		shuffle(currPath)
+		newPath, newDistance = untangle(currPath)
+		# print("newPath", newPath)
+		print("newDistance", newDistance)
+		if(newDistance < currDistance):
+			print("improved by", currDistance - newDistance)
+			currPath = startFrom1(newPath)
+			currDistance = newDistance
+
+			#output to console
+			print(currDistance)
+			print(currPath)
+
+			#output picture
+			plotPath(currPath)
+			plt.pause(0.05)
+			plt.savefig("curr_best.pdf")
+
+			#clear previous results in file
+			open('curr_results.txt', 'w').close()
+
+			#write results to file
+			f = open('curr_results.txt', 'w')
+			f.write(str(currDistance))
+			f.write("\n")
+			f.write(str(currPath))
+
+
+
 def main():
 	plt.ion()
 	fs = getLocations("input_large.txt")
 
-	bestPath = combineMethods(fs)
+	print("beginning distance:",distanceTraveled(fs))
 
-	bestPath = startFrom1(bestPath)
+	# bestPath = loopThroughAllPossibilities(fs)
+	# bestPath = combineMethods(fs)
+
+	bestPath = shuffleAndUntangle(fs)
+
+	# bestPath = startFrom1(bestPath)
 	
-	print(bestPath)
-	print(distanceTraveled(bestPath))
-	plotPath(bestPath)
-	while True:
-		plt.pause(0.05)
+	# print(bestPath)
+	# print(distanceTraveled(bestPath))
+	# plotPath(bestPath)
+	# while True:
+	# 	plt.pause(0.05)
 
 if __name__ == "__main__":
 	main()
-
-
