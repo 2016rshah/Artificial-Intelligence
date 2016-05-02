@@ -1,8 +1,10 @@
 import cv2
 import numpy as np
 import sys
-from math import atan2
-from math import pi
+from math import atan2, pi, cos, sin
+from math import degrees #converts to degrees
+from math import radians #converts to radians
+from math import sqrt
 
 LOCATION = sys.argv[1]
 THRESHOLD = int(sys.argv[2])
@@ -268,7 +270,6 @@ def maximums(votes):
 				maxLocation = (i,j)
 	return (maxValue, maxLocation)
 
-
 def drawLines(canny, gray):
 	'''returns tuple containing
 	the resulting image with lines drawn based on votes and center
@@ -329,7 +330,6 @@ def circle(image, center, radius):
 				setPixel(img, i, j, WHITE_PIXEL)
 	return img
 
-
 def drawCircle(gray, maxValue, maxLocation):
 	img = gray.copy()
 	num_rows = img.shape[0]
@@ -350,7 +350,80 @@ def drawCircle(gray, maxValue, maxLocation):
 
 	return circle(img, maxLocation, radiusGuess)
 
+def calcD(x, y, theta):
+	return (y * cos(theta) - x * sin(theta))
 
+def pointsFromDTheta(d, theta):
+	x = cos(radians(theta))
+	y = sin(radians(theta))
+	if y == 0:
+		return ((float(x) * d, float(y) * d), (float(x+1000) * d, float(y) * d))
+	# print("not just doing a flat slope")
+	slope = float(x)/float(y)
+	# print(x, y, slope)
+	return (((float(x) * d),(float(y) * d)), (float(x+1000) * d, float((x + 1000) * slope * d)))
+	#(x-1000, slope * (x - 1000))
+
+def scale(num_votes, max_votes):
+	return 255 * num_votes / max_votes
+
+def lineDetection(image):
+	img = image.copy() #both are canny2 images
+	num_rows = img.shape[0]
+	num_cols = img.shape[1]
+	poll = {}
+	for x in range(0, num_rows):
+		for y in range(0, num_cols):
+			for theta in range(0, 180, 10):
+				d = calcD(x, y, theta)
+				dt = (d, theta)
+				if poll.has_key(dt):
+					poll[dt] += 1
+					#print("upserted")
+				else:
+					poll[dt] = 1
+					#print("inserted")
+
+				# poll[(d, theta)] = poll.get((d, theta), 0) + 1
+	print(poll)
+	maxDTheta = max(poll.iterkeys(), key=(lambda key: poll[key]))
+	print(maxDTheta, poll[maxDTheta])
+	width = sqrt(num_rows * num_rows + num_cols * num_cols)
+	huffTransform = np.zeros((180, width, 3), np.uint8)
+	for key, value in poll.iteritems():
+		d, theta = key
+		num_votes = value
+		c = (scale(num_votes, poll[maxDTheta]))
+		p1, p2 = pointsFromDTheta(d, theta)
+		p3 = (int(p1[0]), int(p1[1]))
+		p4 = (int(p2[0]), int(p2[1]))
+		print(p1, p2, p3, p4, c)
+		#p3 and c are no good
+		# cv2.line(huffTransform, p3, p4, (c,(c),(c)))
+		cv2.line(huffTransform, (0, 0), (100, 100), (0, 0, 0))
+	# for theta in (0, 180, 30):
+	# 	for d in (0, width):
+	# 		dt = (d, theta)
+	# 		if poll.has_key(dt):
+	# 			num_votes = poll[dt]
+				
+	# 			imageGraph = np.zeros()
+	#huff transform
+	# maxVotes = max(poll.iterkeys(), key=(lambda key: poll[key]))
+	# for theta in (0, 180):
+	# 	for d in (0, sqrt(num_rows * num_rows + num_cols * num_cols)):
+	# 		num_votes = poll[(d, theta)]
+	# 		c = scale(num_votes, maxVotes)
+	# 		p1, p2 = pointsFromDTheta(d, theta)
+	# 		cv2.line(img, p1, p2, (c,c,c))
+	# 		#img = drawDTheta(img, d, theta, (c, c, c))
+	return huffTransform
+
+	# dthetas = sorted(poll, key=poll.get)
+	# for dtheta in dthetas:
+	# 	d = dtheta[0]
+	# 	theta = dtheta[1]
+	# 	draw(img)
 
 image = cv2.imread(LOCATION)
 cv2.imshow('color_image',image)
@@ -380,15 +453,19 @@ cv2.imshow('canny2_image', canny2_image)
 if(LOCATION == "dog.jpg"):
 	cv2.imwrite("canny2_dog.jpg", canny2_image)
 
+linedetection_image = lineDetection(canny2_image)
+cv2.imshow('linedetection_image', linedetection_image)
 # cv2.imshow('cannydiff_image', (canny1_image ^ canny2_image))
-lined_image, polls = drawLines(canny2_image, gray_image)
 
-cv2.imshow('line_image', lined_image)
-cv2.imwrite("lined_image.jpg", lined_image)
+#circle stuff:
+# lined_image, polls = drawLines(canny2_image, gray_image)
 
-maxValue, maxLocation = maximums(polls)
-circle_image = drawCircle(gray_image, maxValue, maxLocation) #should you only calculate on edges or calculate everywhere?
-cv2.imshow('circle_image', circle_image)
-cv2.imwrite("circle_image.jpg", circle_image)
+# cv2.imshow('line_image', lined_image)
+# cv2.imwrite("lined_image.jpg", lined_image)
+
+# maxValue, maxLocation = maximums(polls)
+# circle_image = drawCircle(gray_image, maxValue, maxLocation) #should you only calculate on edges or calculate everywhere?
+# cv2.imshow('circle_image', circle_image)
+# cv2.imwrite("circle_image.jpg", circle_image)
 
 keystroke()
