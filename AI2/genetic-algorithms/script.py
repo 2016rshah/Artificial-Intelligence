@@ -1,4 +1,4 @@
-from random import shuffle
+from random import shuffle, randint 
 import sys
 
 #Board represented as:
@@ -54,7 +54,7 @@ def numCollisions(board):
 def initialPopulation():
 	currParent = [n for n in range(0, N)]
 	pop = []
-	for _ in range(0, 100):
+	for _ in range(0, PS):
 		shuffle(currParent)
 		# print(currParent)
 		pop.append((list(currParent), numCollisions(currParent)))
@@ -66,6 +66,10 @@ def generatePivot():
 
 def mutate(l):
 	#As of right now just mutate by reversing
+	i = randint(0, N-1)
+	j = randint(0, N-1)
+	# print("mutating at ", i, j)
+	l[i], l[j] = l[j], l[i]
 	return l[::-1]
 
 def generateChildren(parent1, parent2):
@@ -79,14 +83,17 @@ def generateChildren(parent1, parent2):
 
 	c1 = p11 + p22
 	c2 = p21 + p12
-
-	if c1 in P:
-		c1 = mutate(c1)
-	if c2 in P:
-		P.append(c2)
-
 	c1 = (c1, numCollisions(c1))
 	c2 = (c2, numCollisions(c2))
+
+	if c1 in P:
+		mutated = mutate(c1[0])
+		c1 = (mutated, numCollisions(mutated))
+	if c2 in P:
+		mutated = mutate(c2[0])
+		c2 = (mutated, numCollisions(mutated))
+
+	
 	P.append(c1)
 	P.append(c2)
 	return (c1, c2)
@@ -118,19 +125,25 @@ def runGeneration():
 def main():
 	global N 
 	global P
+	global PS #population size
 	N = int(sys.argv[1])
+	PS = int(sys.argv[2])
 	# N = int(raw_input("N: "))
 	P = initialPopulation()
 	# print(P)
 	solution = False
+	# for generation in range(0, 200):
+	generation = 0
 	while not solution:
-		print("Running generation with population of", len(P))
+		print("Running generation: ", generation, "with best fitness of", P[0][1])
 		solution = runGeneration()
+		if(solution): break
 		P.sort(key=lambda tup: tup[1]) 
-	print(solution)
-
-	
-	print(solution)
+		P = P[0:PS]
+		generation += 1
+	print("Solution for ", N, " with population size ", PS)
+	print("Took ", generation, " generations to find")
+	print("The solution is", solution)
 
 	# print(map(numCollisions, P))
 
