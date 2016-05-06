@@ -91,6 +91,30 @@ def generateChildren(parent1, parent2):
 	P.append(c2)
 	return (c1, c2)
 
+def runGeneration():
+	for i in range(0, len(P) - 2, 2):
+		j = i + 1
+		if(i < N):
+			if(P[i][1] == 0):
+				print("Found solution in original population")
+				solution = P[i]
+				return solution
+			elif(P[j][1] == 0):
+				print("Found solution in original population")
+				solution = P[j]
+				return solution
+		else:
+			c1, c2 = generateChildren(P[i], P[j])
+			if(c1[1] == 0 ):
+				print("Found solution in child")
+				solution = c1
+				return solution
+			elif(c2[1] == 0):
+				print("Found solution in child")
+				solution = c2
+				return solution
+	return False
+
 def main():
 	global N 
 	global P
@@ -98,27 +122,14 @@ def main():
 	# N = int(raw_input("N: "))
 	P = initialPopulation()
 	# print(P)
-	solution = ([], 0)
-	for i in range(0, len(P) - 2, 2):
-		j = i + 1
-		if(P[i][1] == 0):
-			print("Found solution in original population")
-			solution = P[i]
-			break
-		elif(P[j][1] == 0):
-			print("Found solution in original population")
-			solution = P[j]
-			break
-		else:
-			c1, c2 = generateChildren(P[i], P[j])
-			if(c1[1] == 0 ):
-				print("Found solution in child")
-				solution = c1
-				break
-			elif(c2[1] == 0):
-				print("Found solution in child")
-				solution = c2
-				break
+	solution = False
+	while not solution:
+		print("Running generation with population of", len(P))
+		solution = runGeneration()
+		P.sort(key=lambda tup: tup[1]) 
+	print(solution)
+
+	
 	print(solution)
 
 	# print(map(numCollisions, P))
