@@ -7,49 +7,18 @@ import sys
 
 def numCollisions(board):
 	cs = 0
-	n = len(board)
-	for i in range(0, n):
-		j = board[i] 
-		di = i 
-		dj = j 
-		while(di < n and dj < n and di < n and dj < n):
-			if(board[di] == dj):
-				cs += 1
-				# print(di, dj)
-			di += 1
-			dj += 1
-		cs -= 1
-
-		di = i
-		dj = j
-		while(di >= 0 and dj >= 0 and di < n and dj < n):
-			if(board[di] ==  dj):
-				cs += 1
-				# print(di, dj)
-			di -= 1
-			dj -= 1
-		cs -= 1
-
-		di = i 
-		dj = j
-		while(di >= 0 and dj >= 0 and di < n and dj < n):
-			if(board[di] == dj):
-				cs += 1
-				# print(di, dj)
-			di += 1
-			dj -= 1
-		cs -= 1
-
-		di = i
-		dj = j 
-		while(di >= 0 and dj >= 0 and di< n and dj < n):
-			if(board[di] == dj):
-				cs += 1
-				# print(di, dj)
-			di -= 1
-			dj += 1
-		cs -= 1
+	for i in range(0, len(board)-1):
+		for j in range(i+1, len(board)):
+			iv = board[i]
+			ij = board[j]
+			#diagonal
+			if(abs(iv - ij) == j - i):
+				cs+=1
+			#rows
+			if(board[i] == board[j]):
+				cs+=1
 	return cs
+
 
 def initialPopulation():
 	currParent = [n for n in range(0, N)]
@@ -62,7 +31,15 @@ def initialPopulation():
 	return pop
 
 def generatePivot():
-	return N/2 
+	x = randint(0,10)
+	if(x < 5):
+		return N/2 
+	elif(x < 7):
+		return (N/2) + (N/4)
+	elif(x < 9):
+		return (N/2) - (N/4)
+	else:
+		return randint(0, N-1)
 
 def mutate(l):
 	#As of right now just mutate by reversing
@@ -79,17 +56,23 @@ def generateChildren(parent1, parent2):
 
 	p11, p12 = p1[0:pivot], p1[pivot:len(p1)]
 	p21, p22 = p2[0:pivot], p2[pivot:len(p1)]
-	assert(len(p21) + len(p22) == len(p2))
 
 	c1 = p11 + p22
 	c2 = p21 + p12
 	c1 = (c1, numCollisions(c1))
 	c2 = (c2, numCollisions(c2))
 
+	#Mutations
 	if c1 in P:
 		mutated = mutate(c1[0])
 		c1 = (mutated, numCollisions(mutated))
 	if c2 in P:
+		mutated = mutate(c2[0])
+		c2 = (mutated, numCollisions(mutated))
+	if (randint(1,10) < 3):
+		# print("Mutating both children")
+		mutated = mutate(c1[0])
+		c1 = (mutated, numCollisions(mutated))
 		mutated = mutate(c2[0])
 		c2 = (mutated, numCollisions(mutated))
 
@@ -140,6 +123,7 @@ def main():
 		if(solution): break
 		P.sort(key=lambda tup: tup[1]) 
 		P = P[0:PS]
+		shuffle(P)
 		generation += 1
 	print("Solution for ", N, " with population size ", PS)
 	print("Took ", generation, " generations to find")
