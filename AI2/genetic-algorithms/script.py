@@ -45,14 +45,17 @@ def mutate(l):
 	x = randint(0,10)
 	i = randint(0, N-1)
 	j = randint(0, N-1)
-	if(x < 5):
+	if(x < 4):
 		l[i:j] = reversed(l[i:j])
 		return l
-	elif(x < 10):
+	elif(x < 7):
 		l[i], l[j] = l[j], l[i]
 		return l
 	else:
-		return l[::-1]
+		possibilities = [x for x in range(0,N) if x is not in l]
+		r = choice(possibilities)
+		l[N/2] = r
+		return l
 
 def generateChildren(parent1, parent2):
 	p1 = parent1[0] #the list
@@ -123,12 +126,15 @@ def main():
 	# for generation in range(0, 200):
 	generation = 0
 	while not solution:
-		print("Running generation: ", generation, "with best fitness of", P[0][1])
+		f = P[0][1]
+		print("Running generation: ", generation, "with best fitness of", f)
+		if(f < 2):
+			print(P[0])
+		shuffle(P)
 		solution = runGeneration()
 		if(solution): break
 		P.sort(key=lambda tup: tup[1]) 
 		P = P[0:PS]
-		shuffle(P)
 
 		generation += 1
 	print("Solution for ", N, " with population size ", PS)
