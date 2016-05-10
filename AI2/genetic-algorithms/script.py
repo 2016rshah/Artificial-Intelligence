@@ -1,4 +1,4 @@
-from random import shuffle, randint 
+from random import shuffle, randint, choice
 import sys
 
 #Board represented as:
@@ -52,9 +52,12 @@ def mutate(l):
 		l[i], l[j] = l[j], l[i]
 		return l
 	else:
-		possibilities = [x for x in range(0,N) if x is not in l]
-		r = choice(possibilities)
-		l[N/2] = r
+		possibilities = [x for x in range(0, len(l)) if x not in l]
+		if(len(possibilities) > 1):
+			r = choice(possibilities)
+			l[N/2] = r
+		else:
+			l = l[::-1]
 		return l
 
 def generateChildren(parent1, parent2):
