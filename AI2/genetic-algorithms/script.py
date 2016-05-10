@@ -1,5 +1,6 @@
 from random import shuffle, randint, choice
 import sys
+from collections import Counter
 
 #Board represented as:
 # [0,1,2,3]
@@ -52,12 +53,15 @@ def mutate(l):
 		l[i], l[j] = l[j], l[i]
 		return l
 	else:
-		possibilities = [x for x in range(0, len(l)) if x not in l]
-		if(len(possibilities) > 1):
-			r = choice(possibilities)
-			l[N/2] = r
-		else:
-			l = l[::-1]
+		everything = Counter([x for x in range(0, N)])
+		current = Counter(l)
+		missing = list(everything - current)
+		extra = list(current - everything)
+		if(len(missing) > 0 and len(extra) > 0):
+			replacementIndex = l.index(extra[0])
+			l[replacementIndex] = choice(missing)
+		# else:
+			# l = l[::-1]
 		return l
 
 def generateChildren(parent1, parent2):
@@ -74,10 +78,10 @@ def generateChildren(parent1, parent2):
 	c2 = (c2, numCollisions(c2))
 
 	#Mutations
-	if c1 in P:
+	while c1 in P:
 		mutated = mutate(c1[0])
 		c1 = (mutated, numCollisions(mutated))
-	if c2 in P:
+	while c2 in P:
 		mutated = mutate(c2[0])
 		c2 = (mutated, numCollisions(mutated))
 	if (randint(1,10) < 3):
