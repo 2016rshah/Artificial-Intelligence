@@ -42,12 +42,17 @@ def generatePivot():
 		return randint(0, N-1)
 
 def mutate(l):
-	#As of right now just mutate by reversing
+	x = randint(0,10)
 	i = randint(0, N-1)
 	j = randint(0, N-1)
-	# print("mutating at ", i, j)
-	l[i], l[j] = l[j], l[i]
-	return l[::-1]
+	if(x < 5):
+		l[i:j] = reversed(l[i:j])
+		return l
+	elif(x < 10):
+		l[i], l[j] = l[j], l[i]
+		return l
+	else:
+		return l[::-1]
 
 def generateChildren(parent1, parent2):
 	p1 = parent1[0] #the list
@@ -124,6 +129,7 @@ def main():
 		P.sort(key=lambda tup: tup[1]) 
 		P = P[0:PS]
 		shuffle(P)
+
 		generation += 1
 	print("Solution for ", N, " with population size ", PS)
 	print("Took ", generation, " generations to find")
