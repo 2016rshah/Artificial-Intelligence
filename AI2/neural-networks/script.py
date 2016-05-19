@@ -8,7 +8,9 @@ def f(w, b, x):
 def g(w,b,x,y):
 	return 1 / (1 + (e ** (-w * (x+y) + b)))
 
-# not -> singleValueHillClimbing([0,1],[1,0])
+# not
+# [0,1]
+# [1,0]
 def singleValueHillClimbing(xs, ys):
 	bestW = 0
 	bestB = 0
@@ -48,8 +50,6 @@ def singleValueHillClimbing(xs, ys):
 # [0,0,1,1]
 # [0,1,0,1]
 # [0,1,1,1]
-
-# doubleValueHillClimbing([0,1],[1,0])
 def doubleValueHillClimbing(xs, ys, zs):
 	bestW = 0
 	bestB = 0
