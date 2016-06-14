@@ -8,6 +8,8 @@ def f(w, b, x):
 def g(w,b,x,y):
 	return 1 / (1 + (e ** (-w * (x+y) + b)))
 
+
+#sigleValueHillClimbing([0,1],[1,0])
 # not
 # [0,1]
 # [1,0]
