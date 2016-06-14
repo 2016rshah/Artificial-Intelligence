@@ -60,8 +60,6 @@ def mutate(l):
 		if(len(missing) > 0 and len(extra) > 0):
 			replacementIndex = l.index(extra[0])
 			l[replacementIndex] = choice(missing)
-		# else:
-			# l = l[::-1]
 		return l
 
 def generateChildren(parent1, parent2):
@@ -126,11 +124,8 @@ def main():
 	global PS #population size
 	N = int(sys.argv[1])
 	PS = int(sys.argv[2])
-	# N = int(raw_input("N: "))
 	P = initialPopulation()
-	# print(P)
 	solution = False
-	# for generation in range(0, 200):
 	generation = 0
 	while not solution:
 		f = P[0][1]
