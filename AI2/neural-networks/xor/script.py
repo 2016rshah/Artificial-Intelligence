@@ -35,6 +35,21 @@ def calcFeedForward(weights, trainingSet):
 	return [x11, x01, x2, out]
 	# return [out, x2, x01, x11]
 
+def testWeights(weights, inputs):
+	inputs.append(1) #bias
+	# print(inputs, weights)
+	x11 = sigmoid(dotProduct(inputs, weights[0]))
+	# print(x11)
+	x01 = sigmoid(dotProduct(inputs, weights[0]))
+	# print(x01)
+	x2 = sigmoid(dotProduct([x11,x01], weights[1]))
+	# print(x2)
+	out = dotProduct([x2], weights[2])
+
+	# print(out)
+	return out
+
+
 def dotProduct(inputs, weights):
 	'''
 	adder function
@@ -117,7 +132,7 @@ def main():
 		# 	bestWeights = list(weights)
 		# 	bestError = currError
 		# 	print(bestError)
-		print(i, currError)
+		print(i, currError, weights)
 			# gradient = calcGradient(weights)
 			# applyGradientToWeights(weights, gradient)
 	# print(bestError, bestWeights)
